@@ -1,43 +1,59 @@
-let version = '0.1.7'
+export let version = '0.1.13'
 
 let win = window as any
 
-export function inject() {
-  win.version = version
+export function edit() {
   muteAllEventListeners()
   window.addEventListener('click', onEvent)
-  function onEvent(event: Event) {
-    if (win.version != version) {
-      window.removeEventListener('click', onEvent)
-      return
-    }
-    let e = event.target
-    if (e instanceof HTMLAnchorElement) {
-      stopEvent(event)
-      ask('hyperlink', e, 'href')
-    }
-    if (e instanceof HTMLImageElement) {
-      stopEvent(event)
-      ask('image link', e, 'src')
-    }
-    if (e instanceof HTMLElement && e.innerText) {
-      stopEvent(event)
-      ask('text content', e, 'innerText')
-    }
-    if (e instanceof HTMLElement && !(e instanceof HTMLAnchorElement)) {
-      let a = e.closest('a')
-      if (a) {
-        ask('hyperlink', a, 'href')
-      }
+}
+
+export function disable() {
+  window.removeEventListener('click', onEvent)
+}
+
+function onEvent(event: Event) {
+  if (win.auto_cms.version != version) {
+    disable()
+    return
+  }
+  let e = event.target
+  console.log('target:', e)
+  if (e instanceof HTMLAnchorElement) {
+    stopEvent(event)
+    ask('hyperlink', e, 'href')
+  }
+  if (e instanceof HTMLImageElement) {
+    stopEvent(event)
+    ask('image link', e, 'src')
+    e.removeAttribute('srcset')
+  }
+  if (e instanceof HTMLElement && e.children.length == 0 && e.innerText) {
+    stopEvent(event)
+    ask('text content', e, 'innerText')
+  }
+  if (e instanceof HTMLElement && !(e instanceof HTMLAnchorElement)) {
+    let a = e.closest('a')
+    if (a) {
+      ask('hyperlink', a, 'href')
     }
   }
 }
 
-function ask<T>(message: string, object: T, key: keyof T) {
-  let o = object as any
-  let ans = prompt(message, o[key])
-  if (ans) {
-    o[key] = ans
+function ask<E extends HTMLElement>(
+  message: string,
+  e: E,
+  key: keyof E & string,
+) {
+  if (e.hasAttribute(key)) {
+    let ans = prompt(message, e.getAttribute(key) as string)
+    if (ans) {
+      e.setAttribute(key, ans)
+    }
+  } else {
+    let ans = prompt(message, e[key] as string)
+    if (ans) {
+      ;(e as any)[key] = ans
+    }
   }
 }
 
@@ -50,4 +66,4 @@ function muteAllEventListeners() {
   document.body.innerHTML += ''
 }
 
-inject()
+// edit()
