@@ -1,0 +1,35 @@
+{
+  "name": "auto-cms",
+  "version": "1.0.0",
+  "main": "dist/cjs.js",
+  "scripts": {
+    "test": "tsc --noEmit",
+    "build": "run-s clean transpile",
+    "clean": "rimraf dist",
+    "transpile": "run-p esbuild tsc",
+    "esbuild": "node scripts/esbuild.js",
+    "tsc": "tsc -p tsconfig.esbuild.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.4",
+    "esbuild": "^0.19.11",
+    "esbuild-node-externals": "^1.9.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  },
+  "description": "",
+  "types": "dist/index.d.ts",
+  "module": "dist/esm.js",
+  "browser": "dist/browser.js",
+  "unpkg": "dist/browser.js",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ]
+}
