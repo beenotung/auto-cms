@@ -38,28 +38,36 @@ app.post(
     res.redirect('/')
   },
 )
-app.post('/auto-cms/save', guardCMS, express.text(), (req, res, next) => {
-  let pathname = req.header('X-Pathname')
-  if (!pathname) {
-    res.status(400)
-    res.json({ error: 'missing X-Pathname in header' })
-    return
-  }
-  let file = resolveSiteFile(pathname)
-  if (!file) {
-    res.status(400)
-    res.json({ error: 'target file not found' })
-    return
-  }
-  let content = req.body.trim()
-  if (!content) {
-    res.status(400)
-    res.json({ error: 'empty content' })
-    return
-  }
-  writeFileSync(file, content + '\n')
-  res.json({})
-})
+app.post(
+  '/auto-cms/save',
+  guardCMS,
+  express.text({
+    type: 'text/html',
+    limit: env.FILE_SIZE_LIMIT,
+  }),
+  (req, res, next) => {
+    let pathname = req.header('X-Pathname')
+    if (!pathname) {
+      res.status(400)
+      res.json({ error: 'missing X-Pathname in header' })
+      return
+    }
+    let file = resolveSiteFile(pathname)
+    if (!file) {
+      res.status(400)
+      res.json({ error: 'target file not found' })
+      return
+    }
+    let content = req.body.trim()
+    if (!content) {
+      res.status(400)
+      res.json({ error: 'empty content' })
+      return
+    }
+    writeFileSync(file, content + '\n')
+    res.json({})
+  },
+)
 let cms_js_file = resolve(__dirname, '..', 'public', 'auto-cms.js')
 app.get('/auto-cms.js', guardCMS, (req, res, next) => {
   res.setHeader('Content-Type', 'application/javascript')

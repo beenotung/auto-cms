@@ -206,7 +206,7 @@ class AutoCMSMenu extends HTMLElement {
       fetch('/auto-cms/save', {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'text/html',
           'X-Pathname': location.pathname,
         },
         body: exportHTML(),

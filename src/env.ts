@@ -8,6 +8,7 @@ export let env = {
   SITE_DIR: '.',
   AUTO_CMS_AUTO_LOGIN: 'false',
   AUTO_CMS_PASSWORD: '',
+  FILE_SIZE_LIMIT: '10MB',
   SESSION_SECRET: '',
 }
 
