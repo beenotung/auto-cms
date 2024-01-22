@@ -188,8 +188,16 @@ class AutoCMSMenu extends HTMLElement {
     }
 
     let copySection = this.addSection('Copy')
+    this.addMenuItem(copySection, 'Select Element', event => {
+      alert(
+        'right click > inspect > right-click element > click "Edit As HTML" > copy and paste',
+      )
+    })
 
     let removeSection = this.addSection('Remove')
+    this.addMenuItem(removeSection, 'Select Element', event => {
+      alert('right click > inspect > right-click element > click "Delete Node"')
+    })
 
     let cmsSection = this.addSection('CMS')
     this.addMenuItem(cmsSection, 'Save', event => {
