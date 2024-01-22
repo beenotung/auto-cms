@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>auto-cms</title>
+    <style>
+      .field {
+        margin: 1rem;
+      }
+      body[data-enabled='true'] [data-show='enabled'] {
+        display: unset;
+      }
+      body[data-enabled='false'] [data-show='not-enabled'] {
+        display: unset;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>auto-cms</h1>
+    <form action="/auto-cms/login" method="post" data-show="not-enabled" hidden>
+      <div class="field">
+        <label>
+          password:
+          <input type="password" name="password" />
+        </label>
+      </div>
+      <div class="field">
+        <button>login</button>
+      </div>
+    </form>
+    <form action="/auto-cms/logout" method="post" data-show="enabled" hidden>
+      <div class="field">
+        <button>logout</button>
+      </div>
+    </form>
+    <script>
+      fetch('/auto-cms/status')
+        .then(res => res.json())
+        .then(json => {
+          document.body.dataset.enabled = json.enabled
+        })
+    </script>
+  </body>
+</html>
