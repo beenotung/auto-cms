@@ -2,7 +2,7 @@
 
 Auto turn any webpage into editable CMS without coding.
 
-[![npm Package Version](https://img.shields.io/npm/v/auto-cms)](https://www.npmjs.com/package/auto-cms)
+[![npm Package Version](https://img.shields.io/npm/v/auto-cms-server)](https://www.npmjs.com/package/auto-cms-server)
 
 ## Features
 
