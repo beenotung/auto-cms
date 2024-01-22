@@ -14,5 +14,13 @@
       <li><a href="/article/2-second.html">second article</a></li>
       <li><a href="/article/3-third.html">third article</a></li>
     </ol>
+    <h2>Interactive Elements</h2>
+    <div>this button will be saved</div>
+    <button onclick="this.innerText++">20</button>
+    <div>this button will not be saved</div>
+    <button id="incButton" onclick="this.innerText++">1</button>
+    <script>
+      incButton.innerText = 1
+    </script>
   </body>
 </html>

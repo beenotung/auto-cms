@@ -6,6 +6,7 @@ config()
 export let env = {
   PORT: 8100,
   SITE_DIR: '.',
+  AUTO_CMS_AUTO_LOGIN: 'false',
   AUTO_CMS_PASSWORD: '',
   SESSION_SECRET: '',
 }
