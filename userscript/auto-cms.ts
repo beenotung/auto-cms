@@ -66,4 +66,32 @@ function muteAllEventListeners() {
   document.body.innerHTML += ''
 }
 
-// edit()
+class AutoCMS extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = /* html */ `
+<style>
+  auto-cms {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    border: 1px solid black;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: white;
+    opacity: 0.8;
+  }
+  auto-cms:hover {
+    opacity: 0;
+  }
+  auto-cms span {
+    user-select: none;
+  }
+</style>
+<span>auto-cms enabled</span>
+`
+  }
+}
+
+customElements.define('auto-cms', AutoCMS)
+
+document.body.appendChild(document.createElement('auto-cms'))

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+public/auto-cms.js
 *-lock.json
 *-lock.yaml
 *.lock

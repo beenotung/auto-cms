@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
 set -o pipefail
-node scripts/esbuild.js
-toclip dist/browser.js
+npm run build
+toclip public/auto-cms.js

@@ -37,7 +37,7 @@ app.post(
     res.redirect('/')
   },
 )
-let cms_js_file = resolve(__dirname, '..', 'dist', 'browser.js')
+let cms_js_file = resolve(__dirname, '..', 'public', 'auto-cms.js')
 app.get('/auto-cms.js', (req, res, next) => {
   if (req.session.auto_cms_enabled) {
     res.setHeader('Content-Type', 'application/javascript')
@@ -77,7 +77,12 @@ app.use((req, res, next) => {
       return
     }
   } catch (error) {
-    next(error)
+    let message = String(error)
+    if (message.includes('ENOENT')) {
+      next()
+    } else {
+      next(error)
+    }
   }
   next()
 })
