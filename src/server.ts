@@ -3,7 +3,7 @@ import { print } from 'listening-on'
 import { env } from './env'
 import { join, resolve } from 'path'
 import { sessionMiddleware } from './session'
-import { existsSync, statSync } from 'fs'
+import { existsSync, readFileSync, statSync } from 'fs'
 
 console.log('Project Directory:', env.SITE_DIR)
 
@@ -11,7 +11,6 @@ let app = express()
 
 app.use(sessionMiddleware)
 
-app.use('/auto-cms', express.static(join(__dirname, '..', 'public')))
 app.get('/auto-cms/status', (req, res, next) => {
   res.json({ enabled: req.session.auto_cms_enabled || false })
 })
@@ -38,6 +37,20 @@ app.post(
     res.redirect('/')
   },
 )
+let cms_js_file = resolve(__dirname, '..', 'dist', 'browser.js')
+app.get('/auto-cms.js', (req, res, next) => {
+  if (req.session.auto_cms_enabled) {
+    res.setHeader('Content-Type', 'application/javascript')
+    res.sendFile(cms_js_file)
+  } else {
+    res.status(401)
+    res.end()
+  }
+})
+let cms_index_file = resolve(__dirname, '..', 'public', 'auto-cms.html')
+app.get('/auto-cms', (req, res, next) => {
+  res.sendFile(cms_index_file)
+})
 
 let site_dir = resolve(env.SITE_DIR)
 app.use((req, res, next) => {
@@ -53,7 +66,14 @@ app.use((req, res, next) => {
       stat = statSync(file)
     }
     if (stat.isFile()) {
-      res.sendFile(file)
+      if (req.session.auto_cms_enabled && file.endsWith('.html')) {
+        res.setHeader('Content-Type', 'text/html')
+        res.write(readFileSync(file))
+        res.write('<script src="/auto-cms.js"></script>')
+        res.end()
+      } else {
+        res.sendFile(file)
+      }
       return
     }
   } catch (error) {
