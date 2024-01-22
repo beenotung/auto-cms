@@ -1,6 +1,9 @@
 {
-  "name": "auto-cms",
-  "version": "1.0.0",
+  "name": "auto-cms-server",
+  "version": "0.0.0",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "run-p server dev",
     "server": "ts-node-dev src/server.ts",
