@@ -16,6 +16,21 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Save changes to file
 - [ ] Publish from web UI
 
+## Usage
+
+Usage with installation to lock the version:
+
+```bash
+npm i -D auto-cms-server
+npx auto-cms-server
+```
+
+Usage without installation:
+
+```bash
+npx -y auto-cms-server
+```
+
 ## License
 
 This project is licensed with [BSD-2-Clause](./LICENSE)

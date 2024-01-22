@@ -18,6 +18,10 @@
     "url": "https://beeno-tung.surge.sh"
   },
   "license": "BSD-2-Clause",
+  "bin": {
+    "auto-cms": "./cli.js",
+    "auto-cms-server": "./cli.js"
+  },
   "files": [
     "dist"
   ],
@@ -25,8 +29,11 @@
     "start": "run-p server dev",
     "server": "ts-node-dev src/server.ts",
     "test": "tsc --noEmit",
-    "dev": "npm run build -- --watch",
-    "build": "esbuild --bundle userscript/auto-cms.ts --outfile=public/auto-cms.js"
+    "build": "run-s clean tsc",
+    "clean": "rimraf dist",
+    "tsc": "tsc -p tsconfig.build.json",
+    "dev": "npm run bundle -- --watch",
+    "bundle": "esbuild --bundle userscript/auto-cms.ts --outfile=public/auto-cms.js"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
