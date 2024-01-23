@@ -3,7 +3,12 @@ export let version = '0.1.16'
 let win = window as any
 win.auto_cms = { version }
 
-window.addEventListener('contextmenu', event => {
+window.addEventListener('contextmenu', onContextMenu, {
+  capture: true,
+  passive: false,
+})
+
+function onContextMenu(event: MouseEvent) {
   if (!(event.altKey || event.ctrlKey)) {
     return
   }
@@ -12,10 +17,10 @@ window.addEventListener('contextmenu', event => {
     return
   }
   event.preventDefault()
-  event.stopPropagation()
+  event.stopImmediatePropagation()
   let menu = new AutoCMSMenu()
   menu.show(event, target)
-})
+}
 
 function ask<E extends HTMLElement>(
   message: string,
@@ -117,7 +122,10 @@ class AutoCMSMenu extends HTMLElement {
   connectedCallback() {
     const target = this.target
     if (!target) return
-    window.addEventListener('click', this.handleWindowClick)
+    window.addEventListener('click', this.handleWindowClick, {
+      capture: true,
+      passive: false,
+    })
     this.innerHTML = /* html */ `
 <style>
   auto-cms-menu {
@@ -263,13 +271,20 @@ class AutoCMSMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
-    window.removeEventListener('click', this.handleWindowClick)
+    window.removeEventListener('click', this.handleWindowClick, {
+      capture: true,
+    })
   }
 
   handleWindowClick = (event: MouseEvent) => {
     let e = event.target
     if (e instanceof HTMLElement && !e.closest('auto-cms-menu')) {
       this.remove()
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      window.removeEventListener('click', this.handleWindowClick, {
+        capture: true,
+      })
     }
   }
 
