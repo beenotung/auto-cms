@@ -86,7 +86,6 @@ function exportHTML() {
       break
     }
   }
-  console.log({ lines })
   doc.body.innerHTML = lines.join('\n')
 
   let html = doc.body.parentElement!.outerHTML
