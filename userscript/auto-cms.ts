@@ -341,12 +341,9 @@ class AutoCMSMenu extends HTMLElement {
   handleWindowClick = (event: MouseEvent) => {
     let e = event.target
     if (e instanceof HTMLElement && !e.closest('auto-cms-menu')) {
-      this.remove()
       event.stopImmediatePropagation()
       event.preventDefault()
-      window.removeEventListener('click', this.handleWindowClick, {
-        capture: true,
-      })
+      this.remove()
     }
   }
 
