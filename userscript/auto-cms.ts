@@ -196,10 +196,40 @@ class AutoCMSMenu extends HTMLElement {
     }
 
     let copySection = this.addSection('Copy')
-    this.addMenuItem(copySection, 'Select Element', event => {
+    this.addMenuItem(copySection, 'Advanced Mode', event => {
       alert(
         'right click > inspect > right-click element > click "Edit As HTML" > copy and paste',
       )
+    })
+    this.addMenuItem(copySection, 'Easy Mode', event => {
+      let addTarget = (target: HTMLElement, index: number) => {
+        let targetText = target.outerHTML
+          .replace(target.innerHTML, '')
+          .split('</')[0]
+        targetText = `${index}: ${targetText}`
+        let clonedTarget: HTMLElement | null = null
+        let { button } = this.addMenuItem(copySection, targetText, event => {
+          if (clonedTarget) {
+            clonedTarget.remove()
+            clonedTarget = null
+            button.textContent = targetText
+          } else {
+            clonedTarget = target.cloneNode(true) as HTMLElement
+            let parent = target.parentElement!
+            if (parent.lastElementChild === target) {
+              parent.appendChild(clonedTarget)
+            } else {
+              target.insertAdjacentElement('afterend', clonedTarget)
+            }
+            button.textContent = 'Undo'
+          }
+        })
+        button.style.textAlign = 'start'
+        if (target.parentElement) {
+          addTarget(target.parentElement, index + 1)
+        }
+      }
+      addTarget(target, 1)
     })
 
     let removeSection = this.addSection('Remove')
@@ -268,6 +298,8 @@ class AutoCMSMenu extends HTMLElement {
 
     li.appendChild(button)
     ul.appendChild(li)
+
+    return { li, button }
   }
 
   disconnectedCallback() {
