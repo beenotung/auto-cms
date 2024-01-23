@@ -291,8 +291,16 @@ class AutoCMSMenu extends HTMLElement {
   show(event: MouseEvent, target: HTMLElement) {
     AutoCMSMenu.instance?.remove()
     AutoCMSMenu.instance = this
-    this.style.top = event.y + 'px'
-    this.style.left = event.x + 'px'
+    if (event.y < window.innerHeight / 2) {
+      this.style.top = `calc(${event.y}px + 1rem)`
+    } else {
+      this.style.bottom = `calc(${window.innerHeight - event.y}px + 1rem)`
+    }
+    if (event.x < window.innerWidth / 2) {
+      this.style.left = `calc(${event.x}px + 1rem)`
+    } else {
+      this.style.right = `calc(${window.innerWidth - event.x}px + 1rem)`
+    }
     this.target = target
     document.body.appendChild(this)
   }
