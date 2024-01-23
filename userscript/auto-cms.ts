@@ -109,10 +109,16 @@ function exportHTML() {
   return html
 }
 
+function toTagText(target: HTMLElement): string {
+  return target.outerHTML.replace(target.innerHTML, '').split('</')[0]
+}
+
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
   target?: HTMLElement
+
+  confirmRemoveItem?: Function
 
   constructor() {
     super()
@@ -202,10 +208,8 @@ class AutoCMSMenu extends HTMLElement {
     })
     this.addMenuItem(copySection, 'Easy Mode', event => {
       let addTarget = (target: HTMLElement, index: number) => {
-        let targetText = target.outerHTML
-          .replace(target.innerHTML, '')
-          .split('</')[0]
-        targetText = `${index}: ${targetText}`
+        if (target == document.body) return
+        let targetText = `${index}: ${toTagText(target)}`
         let clonedTarget: HTMLElement | null = null
         let { button } = this.addMenuItem(copySection, targetText, event => {
           if (clonedTarget) {
@@ -232,12 +236,38 @@ class AutoCMSMenu extends HTMLElement {
     })
 
     let removeSection = this.addSection('Remove')
-    this.addMenuItem(removeSection, 'Select Element', event => {
+    this.addMenuItem(removeSection, 'Advanced Mode', event => {
       alert('right click > inspect > right-click element > click "Delete Node"')
+    })
+    this.addMenuItem(removeSection, 'Easy Mode', event => {
+      let addTarget = (target: HTMLElement, index: number) => {
+        if (target == document.body) return
+        let targetText = `${index}: ${toTagText(target)}`
+        let { button } = this.addMenuItem(removeSection, targetText, event => {
+          if (!target.hidden) {
+            target.hidden = true
+            this.confirmRemoveItem = () => {
+              target.remove()
+              button.remove()
+            }
+            button.textContent = 'Undo'
+          } else {
+            target.hidden = false
+            this.confirmRemoveItem = undefined
+            button.textContent = targetText
+          }
+        })
+        button.style.textAlign = 'start'
+        if (target.parentElement) {
+          addTarget(target.parentElement, index + 1)
+        }
+      }
+      addTarget(target, 1)
     })
 
     let cmsSection = this.addSection('CMS')
     this.addMenuItem(cmsSection, 'Save', event => {
+      this.confirmRemoveItem?.()
       let button = event.target as HTMLButtonElement
       button.textContent = 'Saving'
       fetch('/auto-cms/save', {
@@ -302,6 +332,7 @@ class AutoCMSMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.confirmRemoveItem?.()
     window.removeEventListener('click', this.handleWindowClick, {
       capture: true,
     })
