@@ -113,6 +113,13 @@ function toTagText(target: HTMLElement): string {
   return target.outerHTML.replace(target.innerHTML, '').split('</')[0]
 }
 
+function appendToHead(node: Node) {
+  if (!document.head) {
+    document.body.parentElement!.appendChild(document.createElement('head'))
+  }
+  document.head.appendChild(node)
+}
+
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
@@ -263,6 +270,63 @@ class AutoCMSMenu extends HTMLElement {
         }
       }
       addTarget(target, 1)
+    })
+
+    let metaSection = this.addSection('Meta for SEO')
+    this.addMenuItem(metaSection, 'Page Title', event => {
+      let og_meta = document.querySelector('meta[property="og:title"]')
+      let twitter_meta = document.querySelector('meta[name="twitter:title"]')
+      let ans = prompt(
+        'Page title for SEO (keep it under 60 characters):',
+        twitter_meta?.getAttribute('content') ||
+          og_meta?.getAttribute('content') ||
+          document.title,
+      )
+      if (!ans) return
+      twitter_meta?.remove()
+      og_meta?.remove()
+      document.title = ans
+    })
+    this.addMenuItem(metaSection, 'Page Description', event => {
+      let meta = document.querySelector('meta[name="description"]')
+      let og_meta = document.querySelector('meta[property="og:description"]')
+      let twitter_meta = document.querySelector(
+        'meta[name="twitter:description"]',
+      )
+      let ans = prompt(
+        'Page description for SEO (keep it between 155 - 160 characters):',
+        twitter_meta?.getAttribute('content') ||
+          og_meta?.getAttribute('content') ||
+          meta?.getAttribute('content') ||
+          '',
+      )
+      if (!ans) return
+      twitter_meta?.remove()
+      og_meta?.remove()
+      if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute('name', 'description')
+        appendToHead(meta)
+      }
+      meta.setAttribute('content', ans)
+    })
+    this.addMenuItem(metaSection, 'Preview Image', event => {
+      let og_meta = document.querySelector('meta[property="og:image"]')
+      let twitter_meta = document.querySelector('meta[name="twitter:image"]')
+      let ans = prompt(
+        'Preview image for SEO (recommended 1200x630px):',
+        twitter_meta?.getAttribute('content') ||
+          og_meta?.getAttribute('content') ||
+          '',
+      )
+      if (!ans) return
+      twitter_meta?.remove()
+      if (!og_meta) {
+        og_meta = document.createElement('meta')
+        og_meta.setAttribute('property', 'og:image')
+        appendToHead(og_meta)
+      }
+      og_meta.setAttribute('content', ans)
     })
 
     let cmsSection = this.addSection('CMS')
