@@ -355,9 +355,6 @@ class AutoCMSMenu extends HTMLElement {
           button.textContent = 'Save'
         })
     })
-    this.addMenuItem(cmsSection, 'Publish', event => {
-      alert('TODO')
-    })
   }
 
   addSection(title: string) {

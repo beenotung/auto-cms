@@ -20,7 +20,6 @@ Auto turn any webpage into editable CMS without coding.
   - [x] description
   - [x] preview image
 - [x] Save changes to file
-- [ ] Publish from web UI
 
 ## Usage
 
