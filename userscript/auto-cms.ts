@@ -334,8 +334,8 @@ class AutoCMSMenu extends HTMLElement {
       this.confirmRemoveItem?.()
       let button = event.target as HTMLButtonElement
       button.textContent = 'Saving'
-      fetch('/auto-cms/save', {
-        method: 'POST',
+      fetch('/auto-cms/file', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'text/html',
           'X-Pathname': location.pathname,

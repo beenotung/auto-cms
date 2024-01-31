@@ -40,8 +40,8 @@ app.post(
     res.redirect('/')
   },
 )
-app.post(
-  '/auto-cms/save',
+app.put(
+  '/auto-cms/file',
   guardCMS,
   express.text({
     type: 'text/html',
