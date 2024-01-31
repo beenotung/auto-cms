@@ -13,7 +13,10 @@ Auto turn any webpage into editable CMS without coding.
   - image
   - audio
   - video
-- [ ] media upload
+- [ ] media management
+  - view
+  - upload
+  - delete
 - [ ] style editing
 - [x] SEO settings
   - title

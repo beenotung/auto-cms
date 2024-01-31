@@ -3,7 +3,13 @@ import { print } from 'listening-on'
 import { env } from './env'
 import { basename, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
+import {
+  readFileSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'fs'
 import { detectFilenameMime } from 'mime-detect'
 import { format_byte } from '@beenotung/tslib/format'
 
@@ -70,6 +76,22 @@ app.put(
     res.json({})
   },
 )
+app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
+  let pathname = req.header('X-Pathname')
+  if (!pathname) {
+    res.status(400)
+    res.json({ error: 'missing X-Pathname in header' })
+    return
+  }
+  let file = resolveSiteFile(pathname)
+  if (!file) {
+    res.status(400)
+    res.json({ error: 'target file not found' })
+    return
+  }
+  unlinkSync(file)
+  res.json({})
+})
 app.get('/auto-cms/images', guardCMS, (req, res, next) => {
   let dir = scanImageDir(site_dir)
   res.json({ dir })

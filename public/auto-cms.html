@@ -49,6 +49,11 @@
         max-height: 100dvh;
         background-image: url('/auto-cms/transparent-grid.svg');
       }
+      .image--caption--upper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
       code.image--url {
         background-color: #aaaaaa20;
         border-radius: 0.25rem;
@@ -114,8 +119,16 @@
         <figure class="image">
           <img data-src="url" loading="lazy" />
           <figcaption>
-            <div class="image--filename" data-text="filename"></div>
-            <div class="image--size" data-text="size"></div>
+            <div class="image--caption--upper">
+              <div>
+                <div class="image--filename" data-text="filename"></div>
+                <div class="image--size" data-text="size"></div>
+              </div>
+              <div>
+                <button data-onclick="replace">replace</button>
+                <button data-onclick="delete">delete</button>
+              </div>
+            </div>
             <code
               class="image--url"
               data-text="url"
@@ -125,6 +138,9 @@
         </figure>
       </template>
     </div>
+    <dialog id="uploadDialog">
+      <input type="file" />
+    </dialog>
     <script src="https://cdn.jsdelivr.net/npm/data-template@1.10/base.js"></script>
     <script>
       function copyUrl(node) {
@@ -141,6 +157,18 @@
         setTimeout(() => {
           span.remove()
         }, 3000)
+      }
+      function uploadImage(host, url, cb) {
+        let input = document.createElement('input')
+        input.type = 'file'
+        input.hidden = true
+        host.appendChild(input)
+        input.onchange = () => {
+          let file = input.files[0]
+          if (!file) return
+          cb()
+        }
+        input.click()
       }
       getJSON('/auto-cms/status', json => {
         document.body.dataset.enabled = json.enabled
@@ -167,8 +195,42 @@
               renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
               let details = node.querySelector('details')
               details.ontoggle = () => {
-                renderTemplate(node.querySelector('[data-bind="images"]'), dir)
                 details.ontoggle = null
+                for (let image of dir.images) {
+                  image.replace = event => {
+                    if (event.target.tagName.toLowerCase() == 'input') return
+                    let confirm_text = 'confirm to replace'
+                    let ans = prompt(
+                      `${confirm_text} "${image.filename}"?`,
+                      confirm_text,
+                    )
+                    if (ans != confirm_text) return
+                    uploadImage(event.target, image.url, () => {
+                      event.target.textContent = 'replaced'
+                    })
+                  }
+                  image.delete = event => {
+                    let confirm_text = 'confirm to delete'
+                    let ans = prompt(
+                      `${confirm_text} "${image.filename}"?`,
+                      confirm_text,
+                    )
+                    if (ans != confirm_text) return
+                    fetch('/auto-cms/file', {
+                      method: 'DELETE',
+                      headers: { 'X-Pathname': image.url },
+                    })
+                      .then(res => res.json())
+                      .then(json => {
+                        if (json.error) {
+                          alert(json.error)
+                          return
+                        }
+                        event.target.textContent = 'deleted'
+                      })
+                  }
+                }
+                renderTemplate(node.querySelector('[data-bind="images"]'), dir)
               }
               let subDirNodes = node.querySelectorAll('.sub-dirs > .dir')
               if (subDirNodes.length == 0) {
