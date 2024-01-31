@@ -88,9 +88,12 @@
       dialog {
         z-index: 2;
         position: sticky;
-        top: 0;
+        top: 1rem;
         background-color: white;
         padding: 0.5rem;
+      }
+      dialog img {
+        max-height: calc(100dvh - 20rem);
       }
     </style>
   </head>
@@ -118,6 +121,20 @@
         <button onclick="uploadDialog.close()">close</button>
         <h2 class="uploadDialog--title"></h2>
         <input type="file" class="uploadDialog--file" />
+        <figure>
+          <img />
+          <figcaption>
+            <div class="image--filename" data-text="filename"></div>
+            <code
+              class="image--url"
+              data-text="url"
+              onclick="copyUrl(this)"
+            ></code>
+          </figcaption>
+        </figure>
+        <div>
+          <button class="uploadDialog--upload">Confirm Upload</button>
+        </div>
       </dialog>
       <div id="rootDir" data-template="dir" data-bind="dir"></div>
       <template data-name="dir">
@@ -183,14 +200,54 @@
       }
       function uploadImage(dir, image, cb) {
         uploadDialog.querySelector('.uploadDialog--title').textContent = image
-          ? `Replace "${image.url}"`
-          : `Upload image to "${dir.url || dir.name}"`
+          ? `Replace "${image.filename}"`
+          : `Upload image to "${dir.name}"`
 
         let input = uploadDialog.querySelector('.uploadDialog--file')
+        let img = uploadDialog.querySelector('img')
+        let imageFilenameNode = uploadDialog.querySelector('.image--filename')
+        let imageUrlNode = uploadDialog.querySelector('.image--url')
+        let uploadButton = uploadDialog.querySelector('.uploadDialog--upload')
+        img.src = ''
+        imageFilenameNode.textContent = ''
+        imageUrlNode.textContent = image?.url || dir.url + '/?'
+        uploadButton.textContent = 'Confirm Upload'
+        uploadButton.disabled = true
         input.onchange = () => {
           let file = input.files[0]
           if (!file) return
-          cb()
+          let reader = new FileReader()
+          reader.onload = () => {
+            img.onload = () => {
+              img.onload = null
+              uploadButton.disabled = false
+              uploadButton.onclick = event => {
+                fetch('/auto-cms/file', {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': mimeType,
+                    'X-Pathname': imageUrlNode.textContent,
+                  },
+                })
+                  .then(res => res.json())
+                  .then(json => {
+                    if (json.error) {
+                      alert(json.error)
+                      return
+                    }
+                    uploadButton.onclick = null
+                    uploadButton.textContent = 'uploaded'
+                    cb()
+                  })
+              }
+            }
+            // TODO auto compress to webp
+            let mimeType = reader.result.match(/data:(.*?),?;/)[1]
+            img.src = reader.result
+            imageFilenameNode.textContent = file.name
+            imageUrlNode.textContent = image?.url || dir.url + '/' + file.name
+          }
+          reader.readAsDataURL(file)
         }
         input.click()
 
@@ -230,12 +287,6 @@
                 for (let image of dir.images) {
                   image.replace = event => {
                     if (event.target.tagName.toLowerCase() == 'input') return
-                    let confirm_text = 'confirm to replace'
-                    let ans = prompt(
-                      `${confirm_text} "${image.filename}"?`,
-                      confirm_text,
-                    )
-                    if (ans != confirm_text) return
                     uploadImage(dir, image, () => {
                       event.target.textContent = 'replaced'
                     })
