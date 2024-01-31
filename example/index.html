@@ -5,14 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <link rel="stylesheet" href="/style.css" />
+    <style>
+      .article {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .article img {
+        height: 1rem;
+        width: 1rem;
+      }
+    </style>
   </head>
   <body>
     <h1>Home Page</h1>
     <h2>Article List</h2>
     <ol>
-      <li><a href="/article/1-hello.html">hello world</a></li>
-      <li><a href="/article/2-second.html">second article</a></li>
-      <li><a href="/article/3-third.html">third article</a></li>
+      <li>
+        <div class="article">
+          <img src="/assets/circle.svg" />
+          <a href="/article/1-hello.html">hello world</a>
+        </div>
+      </li>
+      <li>
+        <div class="article">
+          <img src="/assets/square.svg" />
+          <a href="/article/2-second.html">second article</a>
+        </div>
+      </li>
+      <li>
+        <div class="article">
+          <img src="/assets/triangle.svg" />
+          <a href="/article/3-third.html">third article</a>
+        </div>
+      </li>
     </ol>
     <h2>Interactive Elements</h2>
     <div>this button will be saved</div>
