@@ -14,6 +14,37 @@
       body[data-enabled='false'] [data-show='not-enabled'] {
         display: unset;
       }
+      summary:hover {
+        background-color: #ff000022;
+      }
+      .dir--meta {
+        display: inline-block;
+      }
+      [data-template='dir'] {
+        position: relative;
+        outline: 1px solid red;
+      }
+      [data-template='dir'] .dir {
+        margin-inline-start: 1rem;
+      }
+      [data-template='dir'] .dir::before {
+        background-color: #ff000022;
+        position: absolute;
+        content: '';
+        width: 1rem;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      figure {
+        outline: 1px solid red;
+      }
+      img {
+        outline: 1px solid red;
+        max-width: 100%;
+        max-height: 100dvh;
+        background-image: url('/auto-cms/transparent-grid.svg');
+      }
     </style>
   </head>
   <body>
@@ -35,14 +66,83 @@
       </div>
     </form>
     <div data-show="enabled">
-      <h2>Images</h2>
+      <h2>Image Dir</h2>
+      <div id="rootDir" data-template="dir" data-bind="dir"></div>
+      <template data-name="dir">
+        <div class="dir" data-id="id">
+          <details>
+            <summary>
+              <div class="dir--meta">
+                <div>dir: <span data-text="name"></span></div>
+                <div>
+                  total images: <span data-text="total_image_count"></span>
+                </div>
+                <div>sub-dirs: <span data-text="sub_dir_count"></span></div>
+              </div>
+            </summary>
+            <div class="sub-dirs" data-template="dir" data-bind="dirs"></div>
+            <div data-template="image" data-bind="images"></div>
+          </details>
+        </div>
+      </template>
+      <template data-name="image">
+        <figure class="image">
+          <img data-src="url" loading="lazy" />
+          <figcaption>
+            <div class="image--filename" data-text="filename"></div>
+            <div class="image--size" data-text="size"></div>
+            <div class="image--dir" data-text="dir"></div>
+          </figcaption>
+        </figure>
+      </template>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/data-template@1.10/base.js"></script>
     <script>
-      fetch('/auto-cms/status')
-        .then(res => res.json())
-        .then(json => {
-          document.body.dataset.enabled = json.enabled
-        })
+      getJSON('/auto-cms/status', json => {
+        document.body.dataset.enabled = json.enabled
+        if (json.enabled) {
+          getJSON('/auto-cms/images', json => {
+            console.log(json)
+            // renderTemplate(imageList, json)
+            let id = 0
+            function showDir(host, dir) {
+              dir.id = 'dir-' + ++id
+              dir.sub_dir_count = dir.dirs.length
+              renderTemplate(host, { dir })
+              let node = document.getElementById(dir.id)
+              if (!node) throw new Error('dir node not found: ' + dir.id)
+              node.onclick = event => {
+                if (event.target == node) {
+                  details.open = false
+                  details.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                  })
+                }
+              }
+              renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
+              let details = node.querySelector('details')
+              details.ontoggle = () => {
+                renderTemplate(node.querySelector('[data-bind="images"]'), dir)
+                details.ontoggle = null
+              }
+              let subDirNodes = node.querySelectorAll('.sub-dirs > .dir')
+              if (subDirNodes.length == 0) {
+                node.querySelector('.sub-dirs').remove()
+              }
+              for (let i = 0; i < subDirNodes.length; i++) {
+                let subDirNode = subDirNodes[i]
+                let subDir = dir.dirs[i]
+                subDirNode.classList.remove('dir')
+                subDirNode.dataset.template = 'dir'
+                subDirNode.dataset.bind = 'dir'
+                showDir(subDirNode, subDir)
+              }
+            }
+            showDir(rootDir, json.dir)
+          })
+        }
+      })
     </script>
   </body>
 </html>

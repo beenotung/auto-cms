@@ -38,10 +38,12 @@
     "bundle": "esbuild --bundle userscript/auto-cms.ts --outfile=public/auto-cms.js"
   },
   "dependencies": {
+    "@beenotung/tslib": "^23.2.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "listening-on": "^2.0.9",
+    "mime-detect": "^1.2.0",
     "populate-env": "^2.0.0"
   },
   "devDependencies": {

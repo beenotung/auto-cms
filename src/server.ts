@@ -1,9 +1,11 @@
 import express from 'express'
 import { print } from 'listening-on'
 import { env } from './env'
-import { join, resolve } from 'path'
+import { basename, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
-import { readFileSync, statSync, writeFileSync } from 'fs'
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
+import { detectFilenameMime } from 'mime-detect'
+import { format_byte } from '@beenotung/tslib/format'
 
 console.log('Project Directory:', env.SITE_DIR)
 
@@ -26,7 +28,7 @@ app.post(
     }
     req.session.auto_cms_enabled = true
     req.session.save()
-    res.redirect('/')
+    res.redirect('/auto-cms')
   },
 )
 app.post(
@@ -68,6 +70,20 @@ app.post(
     res.json({})
   },
 )
+app.get('/auto-cms/images', guardCMS, (req, res, next) => {
+  let dir = scanImageDir(site_dir)
+  res.json({ dir })
+})
+let cms_transparent_grid_file = resolve(
+  __dirname,
+  '..',
+  'public',
+  'transparent-grid.svg',
+)
+app.get('/auto-cms/transparent-grid.svg', guardCMS, (req, res, next) => {
+  res.setHeader('Content-Type', 'image/svg+xml')
+  res.sendFile(cms_transparent_grid_file)
+})
 let cms_js_file = resolve(__dirname, '..', 'public', 'auto-cms.js')
 app.get('/auto-cms.js', guardCMS, (req, res, next) => {
   res.setHeader('Content-Type', 'application/javascript')
@@ -81,6 +97,7 @@ app.get('/auto-cms', (req, res, next) => {
 let site_dir = resolve(env.SITE_DIR)
 
 function resolveSiteFile(pathname: string) {
+  pathname = decodeURIComponent(pathname)
   try {
     let file = resolve(join(site_dir, pathname))
     if (!file.startsWith(site_dir)) return null
@@ -96,6 +113,53 @@ function resolveSiteFile(pathname: string) {
     if (message.includes('ENOENT')) return null
     throw error
   }
+}
+
+type Image = {
+  dir: string
+  filename: string
+  size: string
+  url: string
+}
+
+type Dir = {
+  name: string
+  images: Image[]
+  dirs: Dir[]
+  total_image_count: number
+}
+
+function scanImageDir(dir: string): Dir {
+  let result: Dir = {
+    name: basename(dir),
+    images: [],
+    dirs: [],
+    total_image_count: 0,
+  }
+  let filenames = readdirSync(dir)
+  for (let filename of filenames) {
+    let file = join(dir, filename)
+    let stat = statSync(file)
+    if (stat.isDirectory()) {
+      let dir = scanImageDir(file)
+      if (dir.total_image_count > 0) {
+        result.total_image_count += dir.total_image_count
+        result.dirs.push(dir)
+      }
+    } else if (stat.isFile()) {
+      let mime = detectFilenameMime(filename)
+      if (!mime.startsWith('image/')) continue
+      let url_dir = dir.replace(site_dir, '')
+      result.images.push({
+        dir: url_dir,
+        filename,
+        size: format_byte(stat.size),
+        url: join(url_dir, filename),
+      })
+      result.total_image_count++
+    }
+  }
+  return result
 }
 
 app.use((req, res, next) => {
