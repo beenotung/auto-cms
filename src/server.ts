@@ -25,6 +25,7 @@ app.use(autoLoginCMS)
 app.get('/auto-cms/status', (req, res, next) => {
   res.json({ enabled: req.session.auto_cms_enabled || false })
 })
+
 app.post(
   '/auto-cms/login',
   express.urlencoded({ extended: false }),
@@ -39,6 +40,7 @@ app.post(
     res.redirect('/auto-cms')
   },
 )
+
 app.post(
   '/auto-cms/logout',
   express.urlencoded({ extended: false }),
@@ -107,6 +109,7 @@ app.put(
     res.json({})
   },
 )
+
 app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
   let pathname = req.header('X-Pathname')
   if (!pathname) {
@@ -123,10 +126,12 @@ app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
   unlinkSync(file)
   res.json({})
 })
+
 app.get('/auto-cms/images', guardCMS, (req, res, next) => {
   let dir = scanImageDir(site_dir)
   res.json({ dir })
 })
+
 let cms_transparent_grid_file = resolve(
   __dirname,
   '..',
@@ -137,11 +142,13 @@ app.get('/auto-cms/transparent-grid.svg', guardCMS, (req, res, next) => {
   res.setHeader('Content-Type', 'image/svg+xml')
   res.sendFile(cms_transparent_grid_file)
 })
+
 let cms_js_file = resolve(__dirname, '..', 'public', 'auto-cms.js')
 app.get('/auto-cms.js', guardCMS, (req, res, next) => {
   res.setHeader('Content-Type', 'application/javascript')
   res.sendFile(cms_js_file)
 })
+
 let cms_index_file = resolve(__dirname, '..', 'public', 'auto-cms.html')
 app.get('/auto-cms', (req, res, next) => {
   res.sendFile(cms_index_file)
