@@ -163,6 +163,10 @@ function scanImageDir(dir: string): Dir {
 }
 
 app.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    next()
+    return
+  }
   try {
     let file = resolveSiteFile(req.path)
     if (!file) return next()
