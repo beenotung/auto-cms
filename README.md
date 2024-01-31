@@ -18,6 +18,10 @@ Auto turn any webpage into editable CMS without coding.
   - upload
   - delete
 - [ ] style editing
+  - text alignment
+  - text color
+  - font size
+  - font family
 - [x] SEO settings
   - title
   - description
