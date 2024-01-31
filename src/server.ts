@@ -48,6 +48,12 @@ app.put(
     limit: env.FILE_SIZE_LIMIT,
   }),
   (req, res, next) => {
+    let content = req.body.trim()
+    if (!content) {
+      res.status(400)
+      res.json({ error: 'empty content' })
+      return
+    }
     let pathname = req.header('X-Pathname')
     if (!pathname) {
       res.status(400)
@@ -58,12 +64,6 @@ app.put(
     if (!file) {
       res.status(400)
       res.json({ error: 'target file not found' })
-      return
-    }
-    let content = req.body.trim()
-    if (!content) {
-      res.status(400)
-      res.json({ error: 'empty content' })
       return
     }
     writeFileSync(file, content + '\n')
