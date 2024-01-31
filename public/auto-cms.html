@@ -38,12 +38,35 @@
       }
       figure {
         outline: 1px solid red;
+        margin: 1rem;
+      }
+      figcaption {
+        padding: 0.5rem;
       }
       img {
         outline: 1px solid red;
         max-width: 100%;
         max-height: 100dvh;
         background-image: url('/auto-cms/transparent-grid.svg');
+      }
+      code.image--url {
+        background-color: #aaaaaa20;
+        border-radius: 0.25rem;
+        padding: 0.25rem;
+        position: relative;
+      }
+      .toast-message {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        transform: translateY(100%);
+        z-index: 1;
+        background-color: #005500;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        width: fit-content;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -66,7 +89,7 @@
       </div>
     </form>
     <div data-show="enabled">
-      <h2>Image Dir</h2>
+      <h2>Images</h2>
       <div id="rootDir" data-template="dir" data-bind="dir"></div>
       <template data-name="dir">
         <div class="dir" data-id="id">
@@ -91,13 +114,32 @@
           <figcaption>
             <div class="image--filename" data-text="filename"></div>
             <div class="image--size" data-text="size"></div>
-            <div class="image--dir" data-text="dir"></div>
+            <code
+              class="image--url"
+              data-text="url"
+              onclick="copyUrl(this)"
+            ></code>
           </figcaption>
         </figure>
       </template>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/data-template@1.10/base.js"></script>
     <script>
+      function copyUrl(node) {
+        let selection = window.getSelection()
+        let range = document.createRange()
+        range.selectNodeContents(node)
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.execCommand('copy')
+        let span = document.createElement('span')
+        span.className = 'toast-message'
+        span.textContent = 'copied into clipboard'
+        node.appendChild(span)
+        setTimeout(() => {
+          span.remove()
+        }, 3000)
+      }
       getJSON('/auto-cms/status', json => {
         document.body.dataset.enabled = json.enabled
         if (json.enabled) {
