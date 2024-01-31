@@ -9,5 +9,9 @@
     "incremental": false,
     "outDir": "dist"
   },
-  "exclude": ["userscript", "dist"]
+  "exclude": [
+    "example",
+    "userscript",
+    "dist"
+  ]
 }
