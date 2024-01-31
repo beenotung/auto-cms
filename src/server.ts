@@ -1,7 +1,7 @@
 import express from 'express'
 import { print } from 'listening-on'
 import { env } from './env'
-import { basename, join, resolve } from 'path'
+import { basename, dirname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
   readFileSync,
@@ -12,6 +12,8 @@ import {
 } from 'fs'
 import { detectFilenameMime } from 'mime-detect'
 import { format_byte } from '@beenotung/tslib/format'
+import { Formidable } from 'formidable'
+import bytes from 'bytes'
 
 console.log('Project Directory:', env.SITE_DIR)
 
@@ -46,24 +48,53 @@ app.post(
     res.redirect('/')
   },
 )
+
+let parse_html_middleware = express.text({
+  type: 'text/html',
+  limit: env.FILE_SIZE_LIMIT,
+})
+let maxFileSize = bytes.parse(env.FILE_SIZE_LIMIT)
+let createUploadForm = (options: { dir: string; filename: string }) =>
+  new Formidable({
+    uploadDir: options.dir,
+    filename: () => options.filename,
+    multiples: false,
+    allowEmptyFiles: false,
+    maxFileSize,
+    filter: part => part.name == 'file',
+  })
 app.put(
   '/auto-cms/file',
   guardCMS,
-  express.text({
-    type: 'text/html',
-    limit: env.FILE_SIZE_LIMIT,
-  }),
   (req, res, next) => {
-    let content = req.body.trim()
-    if (!content) {
-      res.status(400)
-      res.json({ error: 'empty content' })
-      return
-    }
     let pathname = req.header('X-Pathname')
     if (!pathname) {
       res.status(400)
       res.json({ error: 'missing X-Pathname in header' })
+      return
+    }
+    if (req.headers['content-type'] == 'text/html') {
+      next()
+      return
+    }
+    let dir = resolve(join(site_dir, dirname(pathname)))
+    let filename = basename(pathname)
+    let form = createUploadForm({ dir, filename })
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        next(err)
+        return
+      }
+      res.json({})
+    })
+  },
+  parse_html_middleware,
+  (req, res, next) => {
+    let pathname = req.header('X-Pathname')!
+    let content = req.body.trim()
+    if (!content) {
+      res.status(400)
+      res.json({ error: 'empty content' })
       return
     }
     let file = resolveSiteFile(pathname)

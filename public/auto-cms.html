@@ -222,12 +222,14 @@
               img.onload = null
               uploadButton.disabled = false
               uploadButton.onclick = event => {
+                let formData = new FormData()
+                formData.set('file', file)
                 fetch('/auto-cms/file', {
                   method: 'PUT',
                   headers: {
-                    'Content-Type': mimeType,
                     'X-Pathname': imageUrlNode.textContent,
                   },
+                  body: formData,
                 })
                   .then(res => res.json())
                   .then(json => {
