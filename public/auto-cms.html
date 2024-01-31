@@ -27,6 +27,9 @@
       .dir--meta {
         display: inline-block;
       }
+      .dir--buttons {
+        margin: 0.25rem 1rem;
+      }
       [data-template='dir'] {
         position: relative;
         outline: 1px solid red;
@@ -82,6 +85,13 @@
         width: max-content;
         font-weight: bold;
       }
+      dialog {
+        z-index: 2;
+        position: sticky;
+        top: 0;
+        background-color: white;
+        padding: 0.5rem;
+      }
     </style>
   </head>
   <body>
@@ -104,6 +114,11 @@
     </form>
     <div data-show="enabled">
       <h2>Images</h2>
+      <dialog id="uploadDialog">
+        <button onclick="uploadDialog.close()">close</button>
+        <h2 class="uploadDialog--title"></h2>
+        <input type="file" class="uploadDialog--file" />
+      </dialog>
       <div id="rootDir" data-template="dir" data-bind="dir"></div>
       <template data-name="dir">
         <div class="dir" data-id="id">
@@ -111,6 +126,9 @@
             <summary>
               <div class="dir--meta">
                 <div>dir: <span data-text="name"></span></div>
+                <div class="dir--buttons">
+                  <button data-onclick="upload">upload</button>
+                </div>
                 <div>
                   total images: <span data-text="total_image_count"></span>
                 </div>
@@ -145,9 +163,7 @@
         </figure>
       </template>
     </div>
-    <dialog id="uploadDialog">
-      <input type="file" />
-    </dialog>
+
     <script src="https://cdn.jsdelivr.net/npm/data-template@1.10/base.js"></script>
     <script>
       function copyUrl(node) {
@@ -165,17 +181,20 @@
           span.remove()
         }, 3000)
       }
-      function uploadImage(host, url, cb) {
-        let input = document.createElement('input')
-        input.type = 'file'
-        input.hidden = true
-        host.appendChild(input)
+      function uploadImage(dir, image, cb) {
+        uploadDialog.querySelector('.uploadDialog--title').textContent = image
+          ? `Replace "${image.url}"`
+          : `Upload image to "${dir.url || dir.name}"`
+
+        let input = uploadDialog.querySelector('.uploadDialog--file')
         input.onchange = () => {
           let file = input.files[0]
           if (!file) return
           cb()
         }
         input.click()
+
+        uploadDialog.show()
       }
       getJSON('/auto-cms/status', json => {
         document.body.dataset.enabled = json.enabled
@@ -187,6 +206,11 @@
             function showDir(host, dir) {
               dir.id = 'dir-' + ++id
               dir.sub_dir_count = dir.dirs.length
+              dir.upload = event => {
+                uploadImage(dir, null, () => {
+                  event.target.textContent = 'uploaded'
+                })
+              }
               renderTemplate(host, { dir })
               let node = document.getElementById(dir.id)
               if (!node) throw new Error('dir node not found: ' + dir.id)
@@ -212,7 +236,7 @@
                       confirm_text,
                     )
                     if (ans != confirm_text) return
-                    uploadImage(event.target, image.url, () => {
+                    uploadImage(dir, image, () => {
                       event.target.textContent = 'replaced'
                     })
                   }

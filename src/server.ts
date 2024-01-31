@@ -145,6 +145,7 @@ type Image = {
 }
 
 type Dir = {
+  url: string
   name: string
   images: Image[]
   dirs: Dir[]
@@ -153,6 +154,7 @@ type Dir = {
 
 function scanImageDir(dir: string): Dir {
   let result: Dir = {
+    url: dir.replace(site_dir, ''),
     name: basename(dir),
     images: [],
     dirs: [],
