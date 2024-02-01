@@ -18,6 +18,14 @@
     "url": "https://beeno-tung.surge.sh"
   },
   "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beenotung/auto-cms.git"
+  },
+  "homepage": "https://github.com/beenotung/auto-cms#readme",
+  "bugs": {
+    "url": "https://github.com/beenotung/auto-cms/issues"
+  },
   "bin": {
     "auto-cms": "./cli.js",
     "auto-cms-server": "./cli.js"
