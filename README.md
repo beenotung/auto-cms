@@ -27,6 +27,7 @@ Auto turn any webpage into editable CMS without coding.
   - description
   - preview image
 - [x] Save changes to file
+- [ ] Multi-language support
 
 ## Usage
 
