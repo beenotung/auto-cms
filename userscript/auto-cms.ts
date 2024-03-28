@@ -477,6 +477,7 @@ class AutoCMSStatus extends HTMLElement {
   }
   .auto-cms-status--text {
     user-select: none;
+    color: black;
   }
 </style>
 <span class="auto-cms-status--text">auto-cms enabled</span>
