@@ -138,24 +138,19 @@ function getHighestZIndex() {
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
+  shadowRoot: ShadowRoot
+
   target?: HTMLElement
 
   confirmRemoveItem?: Function
 
   constructor() {
     super()
-  }
+    this.shadowRoot = this.attachShadow({ mode: 'open' })
 
-  connectedCallback() {
-    const target = this.target
-    if (!target) return
-    window.addEventListener('click', this.handleWindowClick, {
-      capture: true,
-      passive: false,
-    })
-    this.innerHTML = /* html */ `
-<style>
-  auto-cms-menu {
+    let style = document.createElement('style')
+    style.innerHTML = /* css */ `
+  :host {
     position: fixed;
     border: 1px solid black;
     border-radius: 0.25rem;
@@ -184,8 +179,21 @@ class AutoCMSMenu extends HTMLElement {
     margin-top: 0.5rem;
     margin-bottom: 0.25rem;
   }
-</style>
 `
+    this.appendChild(style)
+  }
+
+  appendChild<T extends Node>(node: T): T {
+    return this.shadowRoot.appendChild(node)
+  }
+
+  connectedCallback() {
+    const target = this.target
+    if (!target) return
+    window.addEventListener('click', this.handleWindowClick, {
+      capture: true,
+      passive: false,
+    })
 
     let updateSection = this.addSection('Update')
     if (target.children.length == 0 && target.innerText) {
