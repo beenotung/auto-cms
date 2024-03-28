@@ -120,6 +120,21 @@ function appendToHead(node: Node) {
   document.head.appendChild(node)
 }
 
+function getHighestZIndex() {
+  let max = 0
+  function walk(element: Element) {
+    let current = +getComputedStyle(element).zIndex
+    if (current > max) {
+      max = current
+    }
+    for (let child of element.children) {
+      walk(child)
+    }
+  }
+  walk(document.body)
+  return max
+}
+
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
@@ -146,6 +161,7 @@ class AutoCMSMenu extends HTMLElement {
     border-radius: 0.25rem;
     background-color: white;
     overflow: hidden;
+    z-index: ${getHighestZIndex() + 1};
   }
   .auto-cms-menu--section {
     padding: 0.25rem;
