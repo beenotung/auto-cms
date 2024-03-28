@@ -73,6 +73,7 @@ function exportHTML() {
   doc.querySelector('script[src="/auto-cms.js"]')?.remove()
   doc.querySelector('auto-cms-status')?.remove()
   doc.querySelector('auto-cms-menu')?.remove()
+  doc.querySelector('style[auto-cms]')?.remove()
 
   // trim body
   let lines = doc.body.innerHTML.split('\n')
@@ -488,3 +489,15 @@ class AutoCMSStatus extends HTMLElement {
 customElements.define('auto-cms-status', AutoCMSStatus)
 
 document.body.appendChild(new AutoCMSStatus())
+
+// fix for preview mode when removing elements
+{
+  let style = document.createElement('style')
+  style.setAttribute('auto-cms', '')
+  style.innerHTML = /* css */ `
+  [hidden] {
+    display: none !important;
+  }
+  `
+  document.body.appendChild(style)
+}
