@@ -160,6 +160,7 @@ class AutoCMSMenu extends HTMLElement {
     border: 1px solid black;
     border-radius: 0.25rem;
     background-color: white;
+    color: black;
     overflow: hidden;
     z-index: ${getHighestZIndex() + 1};
   }
