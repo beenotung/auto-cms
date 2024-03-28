@@ -158,6 +158,7 @@ class AutoCMSMenu extends HTMLElement {
     color: black;
     overflow: hidden;
     z-index: ${getHighestZIndex() + 1};
+    overflow: auto;
   }
   .auto-cms-menu--section {
     padding: 0.25rem;
@@ -437,9 +438,13 @@ class AutoCMSMenu extends HTMLElement {
     AutoCMSMenu.instance?.remove()
     AutoCMSMenu.instance = this
     if (event.y < window.innerHeight / 2) {
-      this.style.top = `calc(${event.y}px + 1rem)`
+      let top = `${event.y}px + 1rem`
+      this.style.top = `calc(${top})`
+      this.style.maxHeight = `calc(100dvh - (${top}))`
     } else {
-      this.style.bottom = `calc(${window.innerHeight - event.y}px + 1rem)`
+      let bottom = `${window.innerHeight - event.y}px + 1rem`
+      this.style.bottom = `calc(${bottom})`
+      this.style.maxHeight = `calc(100dvh - (${bottom}))`
     }
     if (event.x < window.innerWidth / 2) {
       this.style.left = `calc(${event.x}px + 1rem)`
