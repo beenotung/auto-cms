@@ -9,3 +9,4 @@ public/auto-cms.js
 .env
 *.tgz
 .DS_Store
+/website
