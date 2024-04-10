@@ -32,6 +32,7 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Save changes to file
 - [ ] Multi-language support
 - [ ] Auto scan 404
+- [x] Auto setup `.env` file
 
 ## Usage
 
