@@ -229,6 +229,11 @@ app.use((req, res, next) => {
     next()
     return
   }
+  let filename = basename(req.path)
+  if (filename == '.env') {
+    next()
+    return
+  }
   try {
     let file = resolveSiteFile(req.path)
     if (!file) return next()
