@@ -22,12 +22,8 @@ function onContextMenu(event: MouseEvent) {
   menu.show(event, target)
 }
 
-function ask<E extends HTMLElement>(
-  message: string,
-  e: E,
-  key: keyof E & string,
-) {
-  if (e.hasAttribute(key)) {
+function ask<E extends Node>(message: string, e: E, key: keyof E & string) {
+  if (e instanceof Element && e.hasAttribute(key)) {
     let ans = prompt(message, e.getAttribute(key) as string)
     if (ans) {
       e.setAttribute(key, ans)
@@ -198,10 +194,13 @@ class AutoCMSMenu extends HTMLElement {
     })
 
     let updateSection = this.addSection('Update')
-    if (target.children.length == 0 && target.innerText) {
-      this.addMenuItem(updateSection, 'Text', event => {
-        ask('text content', target, 'innerText')
-      })
+    for (let node of target.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim()) {
+        console.log(node)
+        this.addMenuItem(updateSection, 'Text: ' + node.nodeValue, event => {
+          ask('text content', node, 'nodeValue')
+        })
+      }
     }
     const a = target.closest('a')
     if (a) {

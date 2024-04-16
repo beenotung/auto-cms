@@ -34,6 +34,10 @@ Auto turn any webpage into editable CMS without coding.
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 
+## Enhancement
+
+- [x] support editing element with multiple text nodes with br
+
 ## Usage
 
 Usage with installation to lock the version:
