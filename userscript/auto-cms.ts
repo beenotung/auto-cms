@@ -472,6 +472,7 @@ class AutoCMSStatus extends HTMLElement {
     border-radius: 0.5rem;
     background-color: white;
     opacity: 0.8;
+    z-index: ${getHighestZIndex() + 1};
   }
   auto-cms-status:hover {
     opacity: 0;
@@ -488,7 +489,9 @@ class AutoCMSStatus extends HTMLElement {
 
 customElements.define('auto-cms-status', AutoCMSStatus)
 
-document.body.appendChild(new AutoCMSStatus())
+setTimeout(() => {
+  document.body.appendChild(new AutoCMSStatus())
+})
 
 // fix for preview mode when removing elements
 {
