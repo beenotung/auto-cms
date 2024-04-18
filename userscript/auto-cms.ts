@@ -147,7 +147,7 @@ class AutoCMSMenu extends HTMLElement {
 
   target?: HTMLElement
 
-  confirmRemoveItem?: Function
+  teardownFns: Array<() => void> = []
 
   constructor() {
     super()
@@ -189,6 +189,23 @@ class AutoCMSMenu extends HTMLElement {
     this.appendChild(style)
   }
 
+  flushTeardownFns() {
+    this.teardownFns.forEach(fn => fn())
+    this.teardownFns.length = 0
+  }
+
+  wrapTeardownFn(fn: () => void) {
+    let toggle = () => {
+      let index = this.teardownFns.indexOf(fn)
+      if (index == -1) {
+        this.teardownFns.push(fn)
+      } else {
+        this.teardownFns.splice(index, 1)
+      }
+    }
+    return { toggle, fn }
+  }
+
   appendChild<T extends Node>(node: T): T {
     return this.shadowRoot.appendChild(node)
   }
@@ -203,13 +220,47 @@ class AutoCMSMenu extends HTMLElement {
 
     let updateSection = this.addSection('Update')
     for (let node of target.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim()) {
+      if (node instanceof HTMLBRElement) {
+        let br = node
+        let remove = this.wrapTeardownFn(() => {
+          br.remove()
+          button.remove()
+        })
+        let { button } = this.addMenuItem(
+          updateSection,
+          'Remove <br>',
+          event => {
+            if (!br.hidden) {
+              br.hidden = true
+              button.textContent = 'Undo'
+            } else {
+              br.hidden = false
+              button.textContent = 'Remove <br>'
+            }
+            remove.toggle()
+          },
+        )
+      } else if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim()) {
         let text = node.nodeValue.trim()
         if (text.length > 7) {
           text = text.slice(0, 7) + '...'
         }
         this.addMenuItem(updateSection, 'Text: ' + text, event => {
-          ask('text content', node, 'nodeValue')
+          let ans = prompt('text content (empty to remove)', node.nodeValue!)
+          if (ans == null) return
+          if (ans) {
+            node.nodeValue = ans
+          } else {
+            node.remove()
+          }
+        })
+        this.addMenuItem(updateSection, 'Add <br> and text', event => {
+          let br = document.createElement('br')
+          node.after(br)
+          let ans = prompt('new text')
+          if (ans) {
+            br.after(ans)
+          }
         })
       }
     }
@@ -279,19 +330,19 @@ class AutoCMSMenu extends HTMLElement {
       let addTarget = (target: HTMLElement, index: number) => {
         if (target == document.body) return
         let targetText = `${index}: ${toTagText(target)}`
+        let remove = this.wrapTeardownFn(() => {
+          target.remove()
+          button.remove()
+        })
         let { button } = this.addMenuItem(removeSection, targetText, event => {
           if (!target.hidden) {
             target.hidden = true
-            this.confirmRemoveItem = () => {
-              target.remove()
-              button.remove()
-            }
             button.textContent = 'Undo'
           } else {
             target.hidden = false
-            this.confirmRemoveItem = undefined
             button.textContent = targetText
           }
+          remove.toggle()
         })
         button.style.textAlign = 'start'
         if (target.parentElement) {
@@ -360,7 +411,7 @@ class AutoCMSMenu extends HTMLElement {
 
     let cmsSection = this.addSection('CMS')
     this.addMenuItem(cmsSection, 'Save', event => {
-      this.confirmRemoveItem?.()
+      this.flushTeardownFns()
       let button = event.target as HTMLButtonElement
       button.textContent = 'Saving'
       fetch('/auto-cms/file', {
@@ -422,7 +473,7 @@ class AutoCMSMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.confirmRemoveItem?.()
+    this.flushTeardownFns()
     window.removeEventListener('click', this.handleWindowClick, {
       capture: true,
     })
