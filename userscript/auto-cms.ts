@@ -45,10 +45,8 @@ function ask<E extends Node>(
 }
 
 function exportHTML() {
-  let doc = new DOMParser().parseFromString(
-    document.body.parentElement!.outerHTML,
-    'text/html',
-  )
+  let doc = document.documentElement.cloneNode(true) as HTMLElement
+  let body = doc.querySelector('body')!
 
   // remove Tridactyl
   doc.querySelector('iframe#cmdline_iframe')?.remove()
@@ -74,10 +72,10 @@ function exportHTML() {
   }
 
   // remove Video Speed Controller
-  if (doc.body.classList.contains('vsc-initialized')) {
-    doc.body.classList.remove('vsc-initialized')
-    if (doc.body.classList.length == 0) {
-      doc.body.removeAttribute('class')
+  if (body.classList.contains('vsc-initialized')) {
+    body.classList.remove('vsc-initialized')
+    if (body.classList.length == 0) {
+      body.removeAttribute('class')
     }
   }
 
@@ -87,37 +85,23 @@ function exportHTML() {
   doc.querySelector('auto-cms-menu')?.remove()
   doc.querySelector('style[auto-cms]')?.remove()
 
-  // trim body
-  let lines = doc.body.innerHTML.split('\n')
-  for (; lines.length > 0; ) {
-    let line = lines.pop()!
-    if (line == '') continue
-    if (line.trim() == '') {
-      break
-    } else {
-      lines.push(line)
-      break
-    }
-  }
-  doc.body.innerHTML = lines.join('\n')
-
-  let html = doc.body.parentElement!.outerHTML
-
-  // fix body newline
-  let bodyIndentation = html.match(/( +)<body/)?.[1] || ''
-  html = html.replace('</body>', '\n' + bodyIndentation + '</body>\n')
+  // fix doctype
+  let html = '<!DOCTYPE html>\n' + doc.outerHTML
 
   // fix head newline
-  let headIndentation =
-    doc.head.innerHTML.split('\n').pop()!.match(/^( +)/)?.[1] || ''
-  html = html.replace('<head', '\n' + headIndentation + '<head')
+  html = html.replace('<head', '\n  <head')
 
-  // fix doctype
-  html = '<!DOCTYPE html>\n' + html
+  // fix body newline
+  while (html.includes('\n</body>')) {
+    html = html.replace('\n</body>', '</body>')
+  }
+  html = html.replace('</body></html>', '</body>\n</html>')
 
   // fix self-closing tags
   html = html.replace(/(<link .*?)>/g, (_, match) => match + ' />')
   html = html.replace(/(<meta .*?)>/g, (_, match) => match + ' />')
+  html = html.replace(/(<img .*?)>/g, (_, match) => match + ' />')
+  html = html.replace(/(<input .*?)>/g, (_, match) => match + ' />')
 
   return html
 }
