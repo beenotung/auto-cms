@@ -35,6 +35,7 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Auto setup `.env` file
 - [x] Robust
   - Correctly set Content-Type even when the filename of the HTML file is not ending with `.html`
+  - Auto backup edits
 
 ## Enhancement
 

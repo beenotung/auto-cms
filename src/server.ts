@@ -6,19 +6,23 @@ import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
   readFileSync,
   readdirSync,
+  renameSync,
   statSync,
   unlinkSync,
   writeFileSync,
 } from 'fs'
 import { detectFilenameMime } from 'mime-detect'
-import { format_byte } from '@beenotung/tslib/format'
+import { format_2_digit, format_byte } from '@beenotung/tslib/format'
 import { Formidable } from 'formidable'
 import bytes from 'bytes'
+import { setupConfigFile } from './config-file'
 
 let pkg = require('../package.json')
 
 console.log(pkg.name, 'v' + pkg.version)
 console.log('Project Directory:', env.SITE_DIR)
+
+setupConfigFile()
 
 let app = express()
 
@@ -108,10 +112,39 @@ app.put(
       res.json({ error: 'target file not found' })
       return
     }
+    if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
+      saveBackup(file)
+    }
     writeFileSync(file, content + '\n')
     res.json({})
   },
 )
+
+function saveBackup(file: string) {
+  let mtime: Date
+  try {
+    let stat = statSync(file)
+    mtime = stat.mtime
+  } catch (error) {
+    // file not exist
+    return
+  }
+
+  let y = mtime.getFullYear()
+  let m = format_2_digit(mtime.getMonth() + 1)
+  let d = format_2_digit(mtime.getDate())
+
+  let H = format_2_digit(mtime.getHours())
+  let M = format_2_digit(mtime.getMinutes())
+  let S = format_2_digit(mtime.getSeconds())
+
+  let ext = extname(file)
+  let backup_file =
+    file.slice(0, file.length - ext.length) +
+    `_bk${y}${m}${d}T${H}${M}${S}${ext}`
+
+  renameSync(file, backup_file)
+}
 
 app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
   let pathname = req.header('X-Pathname')
