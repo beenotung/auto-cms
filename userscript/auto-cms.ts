@@ -196,8 +196,11 @@ class AutoCMSMenu extends HTMLElement {
     let updateSection = this.addSection('Update')
     for (let node of target.childNodes) {
       if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.trim()) {
-        console.log(node)
-        this.addMenuItem(updateSection, 'Text: ' + node.nodeValue, event => {
+        let text = node.nodeValue.trim()
+        if (text.length > 7) {
+          text = text.slice(0, 7) + '...'
+        }
+        this.addMenuItem(updateSection, 'Text: ' + text, event => {
           ask('text content', node, 'nodeValue')
         })
       }
