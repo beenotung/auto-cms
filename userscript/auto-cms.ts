@@ -61,7 +61,15 @@ function exportHTML() {
       text.includes('.TridactylStatusIndicator')
     ) {
       style.remove()
-      break
+      continue
+    }
+    if (
+      text &&
+      text.includes('.cleanslate') &&
+      text.includes('.TridactylStatusIndicator')
+    ) {
+      style.remove()
+      continue
     }
   }
 
