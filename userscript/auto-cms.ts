@@ -22,11 +22,19 @@ function onContextMenu(event: MouseEvent) {
   menu.show(event, target)
 }
 
-function ask<E extends Node>(message: string, e: E, key: keyof E & string) {
+function ask<E extends Node>(
+  message: string,
+  e: E,
+  key: keyof E & string,
+  flag?: 'remove',
+) {
   if (e instanceof Element && e.hasAttribute(key)) {
     let ans = prompt(message, e.getAttribute(key) as string)
+    if (ans == null) return
     if (ans) {
       e.setAttribute(key, ans)
+    } else if (flag == 'remove') {
+      e.removeAttribute(key)
     }
   } else {
     let ans = prompt(message, e[key] as string)
@@ -212,18 +220,10 @@ class AutoCMSMenu extends HTMLElement {
       })
     }
     if (target instanceof HTMLImageElement) {
-      let src = target.src
-      let srcset = target.getAttribute('srcset')
-      if (src || srcset) {
-        this.addMenuItem(updateSection, 'Image', event => {
-          if (src) {
-            ask('image link', target, 'src')
-          }
-          if (srcset) {
-            ask('image link', target, 'srcset')
-          }
-        })
-      }
+      this.addMenuItem(updateSection, 'Image', event => {
+        ask('image src', target, 'src')
+        ask('image srcset', target, 'srcset', 'remove')
+      })
     }
     if (target instanceof HTMLAudioElement) {
       this.addMenuItem(updateSection, 'Audio', event => {
