@@ -15,6 +15,9 @@ import { format_byte } from '@beenotung/tslib/format'
 import { Formidable } from 'formidable'
 import bytes from 'bytes'
 
+let pkg = require('../package.json')
+
+console.log(pkg.name, 'v' + pkg.version)
 console.log('Project Directory:', env.SITE_DIR)
 
 let app = express()
