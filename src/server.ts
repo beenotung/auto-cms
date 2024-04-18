@@ -1,7 +1,7 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { print } from 'listening-on'
 import { env } from './env'
-import { basename, dirname, join, resolve } from 'path'
+import { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
   readFileSync,
@@ -237,18 +237,60 @@ app.use((req, res, next) => {
   try {
     let file = resolveSiteFile(req.path)
     if (!file) return next()
-    if (req.session.auto_cms_enabled && file.endsWith('.html')) {
-      res.setHeader('Content-Type', 'text/html')
-      res.write(readFileSync(file))
-      res.write('<script src="/auto-cms.js"></script>')
-      res.end()
-    } else {
-      res.sendFile(file)
+    if (filename.endsWith('.html')) {
+      let content = readFileSync(file)
+      sendHTML(req, res, content)
+      return
     }
+    if (extname(filename) == '') {
+      let content = readFileSync(file)
+      if (isHTMLInBuffer(content)) {
+        sendHTML(req, res, content)
+        return
+      }
+      sendBuffer(res, content)
+      return
+    }
+    sendFile(res, file)
   } catch (error) {
     next(error)
   }
 })
+
+let prefix_doctype = '<!DOCTYPE html>'.toLowerCase()
+let prefix_html = '<html'.toLowerCase()
+
+function isHTMLInBuffer(content: Buffer): boolean {
+  return (
+    isBufferStartsWith(content, prefix_doctype) ||
+    isBufferStartsWith(content, prefix_html)
+  )
+}
+
+function isBufferStartsWith(content: Buffer, prefix: string): boolean {
+  if (content.length < prefix.length) return false
+  return content.subarray(0, prefix.length).toString().toLowerCase() == prefix
+}
+
+function sendHTML(req: Request, res: Response, content: Buffer) {
+  res.setHeader('Content-Type', 'text/html')
+  res.write(content)
+  if (req.session.auto_cms_enabled) {
+    res.write('<script src="/auto-cms.js"></script>')
+  }
+  res.end()
+}
+
+function sendBuffer(res: Response, content: Buffer) {
+  // FIXME need to set content-type manually?
+  res.write(content)
+  res.end()
+}
+
+function sendFile(res: Response, file: string) {
+  // FIXME need to set content-type manually?
+  res.sendFile(file)
+}
 
 let port = env.PORT
 app.listen(port, () => {

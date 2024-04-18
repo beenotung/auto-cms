@@ -33,6 +33,8 @@ Auto turn any webpage into editable CMS without coding.
 - [ ] Multi-language support
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
+- [x] Robust
+  - Correctly set Content-Type even when the filename of the HTML file is not ending with `.html`
 
 ## Enhancement
 
