@@ -344,6 +344,37 @@ class AutoCMSMenu extends HTMLElement {
       addTarget(target, 1)
     })
 
+    let iframeSection = this.addSection('Iframe')
+    this.addMenuItem(iframeSection, 'Expand', event => {
+      let iFrames = document.getElementsByTagName('iframe')
+      for (let iframe of iFrames) {
+        let outerHTML = iframe.outerHTML
+        let { button } = this.addMenuItem(iframeSection, outerHTML, event => {
+          let div = document.createElement('div')
+
+          // copy attributes from iframe to div
+          {
+            let n = iframe.attributes.length
+            for (let i = 0; i < n; i++) {
+              let attr = iframe.attributes.item(i)!
+              div.setAttribute(attr.name, attr.value)
+            }
+          }
+          // copy inner HTML from iframe to div
+          {
+            let innerHTML = iframe.contentWindow?.document.body.innerHTML
+            if (innerHTML) {
+              div.innerHTML = innerHTML
+            }
+          }
+
+          iframe.replaceWith(div)
+
+          button.remove()
+        })
+      }
+    })
+
     let metaSection = this.addSection('Meta for SEO')
     this.addMenuItem(metaSection, 'Page Title', event => {
       let og_meta = document.querySelector('meta[property="og:title"]')
