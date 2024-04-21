@@ -16,6 +16,19 @@ import { format_2_digit, format_byte } from '@beenotung/tslib/format'
 import { Formidable } from 'formidable'
 import bytes from 'bytes'
 import { setupConfigFile } from './config-file'
+import { autoStartServer } from 'node-easynmt'
+import {
+  LangDict,
+  LangFileSuffix,
+  extractWrappedText,
+  translateHTML,
+  translateText,
+} from './i18n'
+import { decodeHTML } from './html'
+
+autoStartServer({
+  debug: env.NODE_ENV == 'development',
+}).catch(e => console.error(e))
 
 let pkg = require('../package.json')
 
@@ -100,7 +113,7 @@ app.put(
   parse_html_middleware,
   (req, res, next) => {
     let pathname = req.header('X-Pathname')!
-    let content = req.body.trim()
+    let content = req.body.trim() as string
     if (!content) {
       res.status(400)
       res.json({ error: 'empty content' })
@@ -112,13 +125,54 @@ app.put(
       res.json({ error: 'target file not found' })
       return
     }
-    if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
-      saveBackup(file)
-    }
-    writeFileSync(file, content + '\n')
+    saveHTMLFile(file, content + '\n')
     res.json({})
   },
 )
+
+function saveHTMLFile(file: string, content: string) {
+  if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
+    saveBackup(file)
+  }
+  writeFileSync(file, content + '\n')
+  saveLangFile(file + LangFileSuffix, content)
+}
+
+function saveLangFile(file: string, content: string) {
+  let dict = {} as LangDict
+  try {
+    let text = readFileSync(file).toString()
+    dict = JSON.parse(text)
+  } catch (error) {
+    // file not found
+  }
+
+  let matches = extractWrappedText(content)
+  for (let match of matches) {
+    let key = match
+    let word = dict[key]
+    if (!word) {
+      let en = decodeHTML(key.slice(2, -2))
+      word = { en, zh: '' }
+      dict[key] = word
+    }
+    if (!word.zh) {
+      translateText({
+        text: word.en,
+        source_lang: 'en',
+        target_lang: 'zh',
+      }).then(zh => {
+        word.zh = zh
+        writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+      })
+    }
+  }
+
+  if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
+    saveBackup(file)
+  }
+  writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+}
 
 function saveBackup(file: string) {
   let mtime: Date
@@ -275,13 +329,13 @@ app.use((req, res, next) => {
     if (!file) return next()
     if (filename.endsWith('.html')) {
       let content = readFileSync(file)
-      sendHTML(req, res, content)
+      sendHTML(req, res, content, file)
       return
     }
     if (extname(filename) == '') {
       let content = readFileSync(file)
       if (isHTMLInBuffer(content)) {
-        sendHTML(req, res, content)
+        sendHTML(req, res, content, file)
         return
       }
       sendBuffer(res, content)
@@ -308,11 +362,22 @@ function isBufferStartsWith(content: Buffer, prefix: string): boolean {
   return content.subarray(0, prefix.length).toString().toLowerCase() == prefix
 }
 
-function sendHTML(req: Request, res: Response, content: Buffer) {
+function sendHTML(req: Request, res: Response, content: Buffer, file: string) {
   res.setHeader('Content-Type', 'text/html')
-  res.write(content)
+
   if (req.session.auto_cms_enabled) {
+    res.write(content)
     res.write('<script src="/auto-cms.js"></script>')
+  } else {
+    // TODO load lang from cookie
+    let lang = 'zh' as const
+    res.write(
+      translateHTML({
+        html: content.toString(),
+        file: file + LangFileSuffix,
+        lang: lang,
+      }),
+    )
   }
   res.end()
 }

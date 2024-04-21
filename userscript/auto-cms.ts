@@ -1,3 +1,5 @@
+import { wrapText } from './i18n'
+
 export let version = '0.1.16'
 
 let win = window as any
@@ -342,6 +344,42 @@ class AutoCMSMenu extends HTMLElement {
         }
       }
       addTarget(target, 1)
+    })
+
+    let i18nSection = this.addSection('i18n')
+    this.addMenuItem(i18nSection, 'Extract Text', event => {
+      let extractText = (node: Node) => {
+        // wrap text node with {{ }}
+        if (node.nodeType === Node.TEXT_NODE) {
+          let text = node.nodeValue?.trim()
+          if (!text) return
+
+          if (text.includes('{{') && text.includes('}}')) return
+
+          let wrappedText = wrapText(node.nodeValue!)
+          if (wrappedText) {
+            node.nodeValue = wrappedText
+          }
+
+          return
+        }
+
+        // exclude script, style, noscript, and auto-cms elements
+        if (
+          node instanceof HTMLScriptElement ||
+          node instanceof HTMLStyleElement ||
+          node.nodeName.toLocaleLowerCase() == 'noscript' ||
+          node instanceof AutoCMSStatus
+        ) {
+          return
+        }
+
+        // recursively loop child nodes
+        for (let child of node.childNodes) {
+          extractText(child)
+        }
+      }
+      extractText(document.body)
     })
 
     let iframeSection = this.addSection('Iframe')

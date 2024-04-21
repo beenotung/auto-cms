@@ -30,7 +30,9 @@ Auto turn any webpage into editable CMS without coding.
   - description
   - preview image
 - [x] Save changes to file
-- [ ] Multi-language support
+- [x] Multi-language support
+  - [x] convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
+  - [ ] convert traditional Chinese / simplified Chinese
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 - [x] Robust
