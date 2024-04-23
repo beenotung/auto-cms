@@ -33,6 +33,7 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Multi-language support
   - [x] convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
   - [ ] convert traditional Chinese / simplified Chinese
+- [x] Contact form
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 - [x] Robust
@@ -57,6 +58,12 @@ Usage without installation:
 ```bash
 npx -y auto-cms-server
 ```
+
+## API
+
+The api endpoint of contact form is `POST /contact` expecting `Content-Type` be `application/x-www-form-urlencoded` with below optional fields in request body: `name`, `email`, `tel`, `company_name`, `business_nature`, `remark`.
+
+If you want to store additional information, you may store them as JSON in the `remark` field.
 
 ## License
 

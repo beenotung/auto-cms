@@ -16,21 +16,21 @@ import { format_2_digit, format_byte } from '@beenotung/tslib/format'
 import { Formidable } from 'formidable'
 import bytes from 'bytes'
 import { setupConfigFile } from './config-file'
-import { autoStartServer } from 'node-easynmt'
 import {
   LangDict,
   LangFileSuffix,
   extractWrappedText,
+  setupEasyNMT,
   translateHTML,
   translateText,
 } from './i18n'
 import { decodeHTML } from './html'
+import { setupKnex } from './knex'
+import { pkg } from './pkg'
+import { storeContact, storeRequest } from './store'
 
-autoStartServer({
-  debug: env.NODE_ENV == 'development',
-}).catch(e => console.error(e))
-
-let pkg = require('../package.json')
+setupKnex()
+setupEasyNMT()
 
 console.log(pkg.name, 'v' + pkg.version)
 console.log('Project Directory:', env.SITE_DIR)
@@ -41,6 +41,11 @@ let app = express()
 
 app.use(sessionMiddleware)
 app.use(autoLoginCMS)
+
+app.use((req, res, next) => {
+  storeRequest(req)
+  next()
+})
 
 app.get('/auto-cms/status', (req, res, next) => {
   res.json({ enabled: req.session.auto_cms_enabled || false })
@@ -313,6 +318,15 @@ function scanImageDir(dir: string): Dir {
   }
   return result
 }
+
+app.post(
+  '/contact',
+  express.urlencoded({ extended: false }),
+  (req, res, next) => {
+    storeContact(req)
+    res.json({})
+  },
+)
 
 app.use((req, res, next) => {
   if (req.method !== 'GET') {

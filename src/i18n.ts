@@ -1,4 +1,4 @@
-import { translate } from 'node-easynmt'
+import { autoStartServer, translate } from 'node-easynmt'
 import { TaskQueue } from '@beenotung/tslib/task/task-queue'
 import debug from 'debug'
 import { env } from './env'
@@ -113,4 +113,15 @@ export function translateHTML(options: {
   }
 
   return html
+}
+
+export async function setupEasyNMT() {
+  try {
+    await autoStartServer({
+      debug: env.NODE_ENV == 'development',
+    })
+  } catch (error) {
+    // i18n module is optional, fine to continue without halt
+    console.error(error)
+  }
 }
