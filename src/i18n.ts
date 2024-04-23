@@ -1,5 +1,4 @@
-import { autoStartServer, translate } from 'node-easynmt'
-import { TaskQueue } from '@beenotung/tslib/task/task-queue'
+import { autoStartServer, patchedTranslate } from 'node-easynmt'
 import debug from 'debug'
 import { env } from './env'
 import { readFileSync } from 'fs'
@@ -8,61 +7,19 @@ import { encodeHTML } from './html'
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
 
-// target_lang -> in_text -> out_text
-let lang_cache = new Map<string, Map<string, string>>()
-
-let queue = new TaskQueue()
-
-export function translateText(options: {
+export async function translateText(options: {
   /** @description without {{ }} */
   text: string
+  /** @example 'zh' */
   target_lang: string
   /** @description auto detect if not specified */
   source_lang?: string
 }) {
-  return queue.runTask(async () => {
-    let { text: in_text, target_lang } = options
-
-    if (!in_text.trim()) return in_text
-
-    let cache = lang_cache.get(target_lang)
-    if (!cache) {
-      cache = new Map()
-      lang_cache.set(target_lang, cache)
-    }
-
-    let out_text = cache.get(in_text)
-    if (out_text) return out_text
-
-    log('translate:', { in_text })
-
-    let wrapped_in_text = in_text
-    if (!in_text.endsWith('.')) {
-      wrapped_in_text += '.'
-    }
-    if (isUpperCase(in_text[0]) && !isUpperCase(in_text[1])) {
-      wrapped_in_text =
-        wrapped_in_text[0].toLocaleLowerCase() + wrapped_in_text.slice(1)
-    }
-
-    out_text = await translate({
-      text: wrapped_in_text,
-      target_lang,
-      source_lang: options.source_lang,
-    })
-    if (
-      !in_text.endsWith('.') &&
-      (out_text.endsWith('.') || out_text.endsWith('。'))
-    ) {
-      out_text = out_text.slice(0, -1)
-    }
-
-    log('translate:', { out_text })
-
-    cache.set(in_text, out_text)
-
-    return out_text
-  })
+  let in_text = options.text
+  log('translate:', { in_text })
+  let out_text = await patchedTranslate(options)
+  log('translate:', { out_text })
+  return out_text
 }
 
 function isUpperCase(char: string) {
