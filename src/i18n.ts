@@ -76,12 +76,13 @@ export function extractWrappedText(html: string): string[] {
 
 export let LangFileSuffix = '.json'
 
+// key with {{ }} -> LangText
 export type LangDict = Record<string, LangText>
 
-export type LangText = {
-  en: string
-  zh: string
-}
+export type Lang = 'en' | 'zh'
+
+// lang -> text content
+export type LangText = Record<Lang, string>
 
 export function loadLangFile(file: string) {
   try {
@@ -96,7 +97,7 @@ export function loadLangFile(file: string) {
 export function translateHTML(options: {
   html: string
   file: string
-  lang: 'en' | 'zh'
+  lang: Lang
 }): string {
   let { html, file, lang } = options
 

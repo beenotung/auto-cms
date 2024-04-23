@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import { print } from 'listening-on'
-import { env } from './env'
+import { config, env } from './env'
 import { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
@@ -30,7 +30,10 @@ import { pkg } from './pkg'
 import { storeContact, storeRequest } from './store'
 
 setupKnex()
-setupEasyNMT()
+
+if (config.enabled_multi_lang) {
+  setupEasyNMT()
+}
 
 console.log(pkg.name, 'v' + pkg.version)
 console.log('Project Directory:', env.SITE_DIR)
@@ -40,7 +43,10 @@ setupConfigFile()
 let app = express()
 
 app.use(sessionMiddleware)
-app.use(autoLoginCMS)
+
+if (config.enabled_auto_login) {
+  app.use(autoLoginCMS)
+}
 
 app.use((req, res, next) => {
   storeRequest(req)
@@ -382,9 +388,9 @@ function sendHTML(req: Request, res: Response, content: Buffer, file: string) {
   if (req.session.auto_cms_enabled) {
     res.write(content)
     res.write('<script src="/auto-cms.js"></script>')
-  } else {
+  } else if (config.enabled_multi_lang) {
     // TODO load lang from cookie
-    let lang = 'zh' as const
+    let lang = env.AUTO_CMS_DEFAULT_LANG
     res.write(
       translateHTML({
         html: content.toString(),
@@ -392,6 +398,8 @@ function sendHTML(req: Request, res: Response, content: Buffer, file: string) {
         lang: lang,
       }),
     )
+  } else {
+    res.write(content)
   }
   res.end()
 }

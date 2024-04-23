@@ -15,9 +15,7 @@ declare module 'express-session' {
 }
 
 export let autoLoginCMS: RequestHandler = (req, res, next) => {
-  if (env.AUTO_CMS_AUTO_LOGIN == 'true') {
-    req.session.auto_cms_enabled = true
-  }
+  req.session.auto_cms_enabled = true
   next()
 }
 

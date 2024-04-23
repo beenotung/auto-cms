@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto'
-import { config } from 'dotenv'
+import { config as loadEnv } from 'dotenv'
 import { existsSync, writeFileSync } from 'fs'
 import populateEnv from 'populate-env'
 
-config()
+loadEnv()
 
 export let env = {
   NODE_ENV: 'development',
@@ -12,6 +12,8 @@ export let env = {
   AUTO_CMS_AUTO_LOGIN: 'false',
   AUTO_CMS_AUTO_BACKUP: 'true',
   AUTO_CMS_PASSWORD: '',
+  AUTO_CMS_MULTI_LANG: 'true',
+  AUTO_CMS_DEFAULT_LANG: 'en' as const,
   SESSION_SECRET: '',
   FILE_SIZE_LIMIT: '10MB',
 }
@@ -38,4 +40,14 @@ try {
     text += `${key}=${value}\n`
   }
   writeFileSync(file, text)
+}
+
+export function isEnabled(key: keyof typeof env) {
+  let value = env[key] as string
+  return value == 'true' || value.startsWith('enable')
+}
+
+export let config = {
+  enabled_auto_login: isEnabled('AUTO_CMS_AUTO_LOGIN'),
+  enabled_multi_lang: isEnabled('AUTO_CMS_MULTI_LANG'),
 }
