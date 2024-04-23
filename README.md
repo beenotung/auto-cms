@@ -34,6 +34,7 @@ Auto turn any webpage into editable CMS without coding.
   - [x] convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
   - [ ] convert traditional Chinese / simplified Chinese
 - [x] Contact form
+- [x] IFrame inlining
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 - [x] Robust
