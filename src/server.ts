@@ -245,13 +245,24 @@ app.get('/auto-cms/transparent-grid.svg', guardCMS, (req, res, next) => {
   res.sendFile(cms_transparent_grid_file)
 })
 
-let cms_js_file = resolve(__dirname, '..', 'public', 'auto-cms.js')
+function getPkgPublicDir(): string {
+  let devDir = resolve(__dirname, '..', 'public')
+  if (existsSync(devDir)) return devDir
+
+  let prodDir = resolve(__dirname, '..', '..', 'public')
+  if (existsSync(prodDir)) return prodDir
+
+  throw new Error('failed to resolve public directory of auto-cms package')
+}
+let pkg_public_dir = getPkgPublicDir()
+
+let cms_js_file = resolve(pkg_public_dir, 'auto-cms.js')
 app.get('/auto-cms.js', guardCMS, (req, res, next) => {
   res.setHeader('Content-Type', 'application/javascript')
   res.sendFile(cms_js_file)
 })
 
-let cms_index_file = resolve(__dirname, '..', 'public', 'auto-cms.html')
+let cms_index_file = resolve(pkg_public_dir, 'auto-cms.html')
 app.get('/auto-cms', (req, res, next) => {
   res.sendFile(cms_index_file)
 })
