@@ -6,7 +6,7 @@ Auto turn any webpage into editable CMS without coding.
 
 ## Features
 
-- [x] Right-click with `Ctrl` key or `Alt` key to show menu
+- [x] Click with `Ctrl` key or `Alt` key to show menu
 - [x] Edit from web UI
   - text
   - link

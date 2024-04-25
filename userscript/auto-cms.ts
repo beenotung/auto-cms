@@ -9,6 +9,10 @@ window.addEventListener('contextmenu', onContextMenu, {
   capture: true,
   passive: false,
 })
+window.addEventListener('click', onContextMenu, {
+  capture: true,
+  passive: false,
+})
 
 function onContextMenu(event: MouseEvent) {
   if (!(event.altKey || event.ctrlKey)) {
