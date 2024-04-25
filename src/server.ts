@@ -340,11 +340,50 @@ function scanImageDir(dir: string): Dir {
 app.post(
   '/contact',
   express.urlencoded({ extended: false }),
+  express.json(),
   (req, res, next) => {
-    storeContact(req)
-    res.json({})
+    let error = ''
+    try {
+      storeContact(req)
+    } catch (e) {
+      error = String(e)
+    }
+    if (req.headers.accept?.includes('json')) {
+      if (error) {
+        res.status(400)
+        res.json({ error })
+      } else {
+        res.json({ code: 200, ok: true, success: true })
+      }
+    } else {
+      if (env.SUBMIT_CONTACT_RESULT_PAGE == 'default') {
+        res.end(/* html */ `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submitted</title>
+</head>
+<body>
+  <p>Your submission has been received.</p>
+  ${error ? `<pre><code>${escapeHTML(error)}</code></pre>` : ''}
+  <p>Back to <a href="/">home page</a>.</p>
+</body>
+</html>
+`)
+      } else {
+        res.sendFile(resolve(site_dir, env.SUBMIT_CONTACT_RESULT_PAGE))
+      }
+    }
   },
 )
+
+function escapeHTML(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
 
 // GET site file
 app.use((req, res, next) => {

@@ -63,9 +63,47 @@ npx -y auto-cms-server
 
 ## API
 
-The api endpoint of contact form is `POST /contact` expecting `Content-Type` be `application/x-www-form-urlencoded` with below optional fields in request body: `name`, `email`, `tel`, `company_name`, `business_nature`, `remark`.
+### Submit Contact Form
+
+```
+Method: POST
+Pathname: /contact
+Content-Type: application/x-www-form-urlencoded or application/json
+Accept: text/html or application/json
+Body Fields:
+- name
+- email
+- tel
+- company_name
+- business_nature
+- remark
+```
+
+All body fields are optional.
 
 If you want to store additional information, you may store them as JSON in the `remark` field.
+
+If the `Accept` is `application/json`, the response will be a json object with optional `error` string; otherwise the response will be a html page.
+
+The response file can be configured in the env variable `SUBMIT_CONTACT_RESULT_PAGE`. If it is not specified, or specified as `default`, a simple html page will be response as below:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submitted</title>
+  </head>
+  <body>
+    <p>Your submission has been received.</p>
+    ${error ? `
+    <pre><code>${escapeHTML(error)}</code></pre>
+    ` : ''}
+    <p>Back to <a href="/">home page</a>.</p>
+  </body>
+</html>
+```
 
 ## License
 

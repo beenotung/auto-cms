@@ -14,6 +14,7 @@ export let env = {
   AUTO_CMS_PASSWORD: '',
   AUTO_CMS_MULTI_LANG: 'true',
   AUTO_CMS_DEFAULT_LANG: 'en' as const,
+  SUBMIT_CONTACT_RESULT_PAGE: 'default' as const,
   SESSION_SECRET: '',
   FILE_SIZE_LIMIT: '10MB',
 }
