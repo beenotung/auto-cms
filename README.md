@@ -77,11 +77,12 @@ Body Fields:
 - company_name
 - business_nature
 - remark
+- extra
 ```
 
 All body fields are optional.
 
-If you want to store additional information, you may store them as JSON in the `remark` field.
+If you submit additional fields in the request body, they will be stored as JSON in the `extra` field.
 
 If the `Accept` is `application/json`, the response will be a json object with optional `error` string; otherwise the response will be a html page.
 

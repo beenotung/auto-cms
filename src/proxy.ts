@@ -16,6 +16,7 @@ export type Contact = {
   company_name: null | string
   business_nature: null | string
   remark: null | string
+  extra: null | string
   submit_time: number
   confirm_time: null | number
   dismiss_time: null | number

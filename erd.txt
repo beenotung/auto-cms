@@ -33,6 +33,7 @@ tel text NULL
 company_name text NULL
 business_nature text NULL
 remark text NULL
+extra text NULL
 submit_time integer
 confirm_time integer NULL
 dismiss_time integer NULL

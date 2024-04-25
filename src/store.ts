@@ -23,25 +23,19 @@ export function storeRequest(req: Request) {
   return { id }
 }
 
-let contactParser = object({
-  name: optional(string()),
-  email: optional(string()),
-  tel: optional(string()),
-  company_name: optional(string()),
-  business_nature: optional(string()),
-  remark: optional(string()),
-})
-
 export function storeContact(req: Request) {
   let proxy = getProxy()
-  let input = contactParser.parse(req.body, { name: 'req.body' })
+  let { name, email, tel, company_name, business_nature, remark, ...extra } =
+    req.body || {}
+  let {} = req.body
   let id = proxy.contact.push({
-    name: input.name || null,
-    email: input.email || null,
-    tel: input.tel || null,
-    company_name: input.company_name || null,
-    business_nature: input.business_nature || null,
-    remark: input.remark || null,
+    name: name || null,
+    email: email || null,
+    tel: tel || null,
+    company_name: company_name || null,
+    business_nature: business_nature || null,
+    remark: remark || null,
+    extra: Object.keys(extra).length == 0 ? null : JSON.stringify(extra),
     submit_time: Date.now(),
     confirm_time: null,
     dismiss_time: null,
