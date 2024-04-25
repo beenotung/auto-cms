@@ -4,6 +4,7 @@ import { config, env } from './env'
 import { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
+  existsSync,
   readFileSync,
   readdirSync,
   renameSync,
@@ -334,6 +335,7 @@ app.post(
   },
 )
 
+// GET site file
 app.use((req, res, next) => {
   if (req.method !== 'GET') {
     next()
@@ -364,6 +366,26 @@ app.use((req, res, next) => {
     sendFile(res, file)
   } catch (error) {
     next(error)
+  }
+})
+
+function get404File(): string | null {
+  let file = join(site_dir, '404.html')
+  if (existsSync(file)) return resolve(file)
+  file = join(site_dir, 'index.html')
+  if (existsSync(file)) return resolve(file)
+  return null
+}
+
+let file_404 = get404File()
+
+// 404 page
+app.use((req, res, next) => {
+  res.status(404)
+  if (file_404) {
+    res.sendFile(file_404)
+  } else {
+    next()
   }
 })
 

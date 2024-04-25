@@ -35,6 +35,7 @@ Auto turn any webpage into editable CMS without coding.
   - [ ] convert traditional Chinese / simplified Chinese
 - [x] Contact form
 - [x] IFrame inlining
+- [x] Custom 404 layout (send `404.html` if exists, otherwise send `index.html`)
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 - [x] Robust
