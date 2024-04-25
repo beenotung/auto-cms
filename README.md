@@ -106,6 +106,56 @@ The response file can be configured in the env variable `SUBMIT_CONTACT_RESULT_P
 </html>
 ```
 
+If you want to implement custom form submission experience, you can do that with AJAX like below example:
+
+```html
+<form method="POST" action="/contact" onsubmit="submitContact(event)">
+  <h1>Contact Form</h1>
+  <div class="contact-form--field">
+    <label>
+      Nickname: <input type="text" name="name" autocomplete="nickname" />
+    </label>
+  </div>
+  <div class="contact-form--field">
+    <label>
+      Email: <input type="email" name="email" autocomplete="email" />
+    </label>
+  </div>
+  <div>
+    <input type="submit" value="Submit" />
+  </div>
+  <div class="contact-form--submit-result"></div>
+</form>
+<script>
+  async function submitContact(event) {
+    let form = event.target
+    let result = form.querySelector('.contact-form--submit-result')
+    function showResult(text) {
+      result.textContent = text
+    }
+    try {
+      let formData = new FormData(form)
+      let params = new URLSearchParams(formData)
+      let body = params.toString()
+      event.preventDefault()
+      let res = await fetch('/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body,
+      })
+      let json = await res.json()
+      if (json.error) throw json.error
+      showResult('Thank you. Your submission is received.')
+    } catch (error) {
+      showResult(String(error))
+    }
+  }
+</script>
+```
+
 ## License
 
 This project is licensed with [BSD-2-Clause](./LICENSE)
