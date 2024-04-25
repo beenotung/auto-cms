@@ -30,12 +30,12 @@ Auto turn any webpage into editable CMS without coding.
   - description
   - preview image
 - [x] Save changes to file
+- [x] Custom 404 layout (send `404.html` if exists, otherwise send `index.html`)
 - [x] Multi-language support
   - [x] convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
   - [ ] convert traditional Chinese / simplified Chinese
 - [x] Contact form
 - [x] IFrame inlining
-- [x] Custom 404 layout (send `404.html` if exists, otherwise send `index.html`)
 - [ ] Auto scan 404
 - [x] Auto setup `.env` file
 - [x] Robust
