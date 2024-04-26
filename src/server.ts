@@ -269,25 +269,43 @@ app.get('/auto-cms', (req, res, next) => {
 
 let site_dir = resolve(env.SITE_DIR)
 
-function resolveSiteFile(pathname: string) {
+// 0. ../file -> null
+// 1. contact.html -> contact.html
+// 2. contact -> contact
+// 3. contact -> contact/index.html
+// 4. contact -> contact.html
+function resolveSiteFile(pathname: string): string | null {
   pathname = decodeURIComponent(pathname)
-  let file = resolve(join(site_dir, pathname))
+  let file = resolve(site_dir, pathname)
+
+  // 0. ../file -> null
+  if (!file.startsWith(site_dir)) return null
+
+  // 1. contact.html -> contact.html
+  if (file.endsWith('.html')) {
+    return existsSync(file) ? file : null
+  }
+
   try {
-    if (!file.startsWith(site_dir)) return null
     let stat = statSync(file)
-    if (stat.isDirectory()) {
-      file = join(file, 'index.html')
-      stat = statSync(file)
-    }
-    if (!stat.isFile()) return null
-    return file
+
+    // 2. contact -> contact
+    if (stat.isFile()) return file
+
+    if (!stat.isDirectory()) return null
+
+    // 3. contact -> contact/index.html
+    let index = join(file, 'index.html')
+    if (existsSync(index)) return index
+
+    // 4. contact -> contact.html
+    file += '.html'
+    if (existsSync(file)) return file
+
+    return null
   } catch (error) {
     let message = String(error)
-    if (message.includes('ENOENT')) {
-      file += '.html'
-      if (existsSync(file)) return file
-      return null
-    }
+    if (message.includes('ENOENT')) return null
     throw error
   }
 }
