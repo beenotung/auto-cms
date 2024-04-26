@@ -271,8 +271,8 @@ let site_dir = resolve(env.SITE_DIR)
 
 function resolveSiteFile(pathname: string) {
   pathname = decodeURIComponent(pathname)
+  let file = resolve(join(site_dir, pathname))
   try {
-    let file = resolve(join(site_dir, pathname))
     if (!file.startsWith(site_dir)) return null
     let stat = statSync(file)
     if (stat.isDirectory()) {
@@ -283,7 +283,11 @@ function resolveSiteFile(pathname: string) {
     return file
   } catch (error) {
     let message = String(error)
-    if (message.includes('ENOENT')) return null
+    if (message.includes('ENOENT')) {
+      file += '.html'
+      if (existsSync(file)) return file
+      return null
+    }
     throw error
   }
 }
@@ -403,12 +407,13 @@ app.use((req, res, next) => {
   try {
     let file = resolveSiteFile(req.path)
     if (!file) return next()
-    if (filename.endsWith('.html')) {
+    let ext = extname(file)
+    if (ext == '.html') {
       let content = readFileSync(file)
       sendHTML(req, res, content, file)
       return
     }
-    if (extname(filename) == '') {
+    if (ext == '') {
       let content = readFileSync(file)
       if (isHTMLInBuffer(content)) {
         sendHTML(req, res, content, file)
