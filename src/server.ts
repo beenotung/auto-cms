@@ -447,10 +447,18 @@ app.use((req, res, next) => {
 })
 
 function get404File(): string | null {
-  let file = join(site_dir, '404.html')
-  if (existsSync(file)) return resolve(file)
-  file = join(site_dir, 'index.html')
-  if (existsSync(file)) return resolve(file)
+  let file = resolve(site_dir, '404.html')
+  if (existsSync(file)) return file
+
+  file = resolve(site_dir, '404/index.html')
+  if (existsSync(file)) return file
+
+  file = resolve(site_dir, '404')
+  if (existsSync(file)) return file
+
+  file = resolve(site_dir, 'index.html')
+  if (existsSync(file)) return file
+
   return null
 }
 
