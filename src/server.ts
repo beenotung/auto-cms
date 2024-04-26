@@ -300,15 +300,14 @@ function resolveSiteFile(pathname: string): string | null {
     let index = join(file, 'index.html')
     if (existsSync(index)) return index
 
-    // 4. contact -> contact.html
-    file += '.html'
-    if (existsSync(file)) return file
-
     return null
   } catch (error) {
     let message = String(error)
-    if (message.includes('ENOENT')) return null
-    throw error
+    if (!message.includes('ENOENT')) throw error
+
+    // 4. contact -> contact.html
+    file += '.html'
+    return existsSync(file) ? file : null
   }
 }
 
