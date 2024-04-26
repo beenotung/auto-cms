@@ -462,13 +462,12 @@ function get404File(): string | null {
   return null
 }
 
-let file_404 = get404File()
-
 // 404 page
 app.use((req, res, next) => {
   res.status(404)
-  if (file_404) {
-    res.sendFile(file_404)
+  let file = get404File()
+  if (file) {
+    res.sendFile(file)
   } else {
     next()
   }
