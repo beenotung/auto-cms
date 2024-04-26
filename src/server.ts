@@ -392,7 +392,11 @@ app.use((req, res, next) => {
     return
   }
   let filename = basename(req.path)
-  if (filename == '.env') {
+  if (
+    filename == '.env' ||
+    filename.startsWith('.env.') ||
+    filename.endsWith('.env')
+  ) {
     next()
     return
   }
