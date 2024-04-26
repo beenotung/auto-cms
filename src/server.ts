@@ -276,7 +276,9 @@ let site_dir = resolve(env.SITE_DIR)
 // 4. contact -> contact.html
 function resolveSiteFile(pathname: string): string | null {
   pathname = decodeURIComponent(pathname)
-  let file = resolve(site_dir, pathname)
+
+  // use `resolve(join())` instead of `resolve()` to avoid resolving `/` pathname as root directory
+  let file = resolve(join(site_dir, pathname))
 
   // 0. ../file -> null
   if (!file.startsWith(site_dir)) return null
