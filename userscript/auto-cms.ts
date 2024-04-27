@@ -491,6 +491,14 @@ class AutoCMSMenu extends HTMLElement {
       }
       this.saveHTML(event, { pathname, force: true })
     })
+    this.addMenuItem(cmsSection, 'Show Files', event => {
+      let url = location.origin + location.pathname
+      if (!url.endsWith('/')) {
+        url += '/'
+      }
+      url += '__list__'
+      window.open(url, '_blank')
+    })
   }
 
   saveHTML(event: MouseEvent, options: { pathname: string; force?: boolean }) {

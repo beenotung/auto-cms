@@ -84,6 +84,43 @@ app.post(
   },
 )
 
+// list site files
+app.use((req, res, next) => {
+  if (
+    !req.session.auto_cms_enabled ||
+    req.method != 'GET' ||
+    !req.path.endsWith('__list__')
+  ) {
+    return next()
+  }
+
+  let dir_pathname = dirname(dirname(req.path))
+  let dir = resolve(join(site_dir, dir_pathname))
+  if (!dir.startsWith(site_dir)) {
+    return next()
+  }
+
+  let filenames = readdirSync(dir)
+
+  res.end(/* html */ `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submitted</title>
+</head>
+<body>
+  ${filenames
+    .map(filename => {
+      let href = join(dir_pathname, filename)
+      return /* html */ `<div><a href="${href}">${filename}</a></div>`
+    })
+    .join('\n')}
+</body>
+</html>
+`)
+})
+
 let parse_html_middleware = express.text({
   type: 'text/html',
   limit: env.FILE_SIZE_LIMIT,
@@ -317,7 +354,7 @@ function resolveSiteFile(pathname: string): string | null {
     return null
   } catch (error) {
     let message = String(error)
-    if (!message.includes('ENOENT')) throw error
+    if (!message.includes('ENOENT') && !message.includes('ENOTDIR')) throw error
 
     // 4. contact -> contact.html
     file += '.html'
