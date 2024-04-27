@@ -487,7 +487,13 @@ class AutoCMSMenu extends HTMLElement {
         },
         body: exportHTML(),
       })
-        .then(res => res.json())
+        .then(async res => {
+          try {
+            return await res.json()
+          } catch (error) {
+            return { error: res.statusText }
+          }
+        })
         .then(json => {
           if (json.error) {
             throw json.error
