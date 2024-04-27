@@ -234,7 +234,11 @@ function saveLangFile(file: string, content: string) {
   if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
     saveBackup(file)
   }
-  writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+
+  let text = JSON.stringify(dict, null, 2)
+  if (text != '{}') {
+    writeFileSync(file, text + '\n')
+  }
 }
 
 function saveBackup(file: string) {
