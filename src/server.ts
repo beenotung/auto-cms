@@ -126,6 +126,7 @@ app.put(
   parse_html_middleware,
   (req, res, next) => {
     let pathname = req.header('X-Pathname')!
+    let force = req.header('X-Force')!
     let content = req.body.trim() as string
     if (!content) {
       res.status(400)
@@ -133,6 +134,18 @@ app.put(
       return
     }
     let file = resolveSiteFile(pathname)
+    if (!file && force) {
+      if (!pathname.endsWith('.html')) {
+        // e.g. '/contact'
+        if (!pathname.endsWith('/')) {
+          pathname += '/'
+        }
+        // e.g. '/contact/'
+        pathname += 'index.html'
+      }
+      // e.g. '/contact/index.html'
+      file = resolve(join(site_dir, pathname))
+    }
     if (!file) {
       res.status(400)
       res.json({ error: 'target file not found' })

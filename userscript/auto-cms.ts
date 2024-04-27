@@ -476,36 +476,54 @@ class AutoCMSMenu extends HTMLElement {
 
     let cmsSection = this.addSection('CMS')
     this.addMenuItem(cmsSection, 'Save', event => {
-      this.flushTeardownFns()
-      let button = event.target as HTMLButtonElement
-      button.textContent = 'Saving'
-      fetch('/auto-cms/file', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'text/html',
-          'X-Pathname': location.pathname,
-        },
-        body: exportHTML(),
-      })
-        .then(async res => {
-          try {
-            return await res.json()
-          } catch (error) {
-            return { error: res.statusText }
-          }
-        })
-        .then(json => {
-          if (json.error) {
-            throw json.error
-          } else {
-            button.textContent = 'Saved'
-          }
-        })
-        .catch(error => {
-          alert(String(error))
-          button.textContent = 'Save'
-        })
+      this.saveHTML(event, { pathname: location.pathname })
     })
+    this.addMenuItem(cmsSection, 'Save As', async event => {
+      let pathname = prompt('Pathname:', location.pathname)
+      if (!pathname) return
+      let res = await fetch(pathname)
+      if (res.status == 200) {
+        let ans = confirm(`Confirm to override file: ${pathname} ?`)
+        if (!ans) return
+      } else {
+        let ans = confirm(`Confirm to save to new file" ${pathname} ?`)
+        if (!ans) return
+      }
+      this.saveHTML(event, { pathname, force: true })
+    })
+  }
+
+  saveHTML(event: MouseEvent, options: { pathname: string; force?: boolean }) {
+    this.flushTeardownFns()
+    let button = event.target as HTMLButtonElement
+    button.textContent = 'Saving'
+    fetch('/auto-cms/file', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'text/html',
+        'X-Pathname': options.pathname,
+        'X-Force': options.force ? 'true' : 'false',
+      },
+      body: exportHTML(),
+    })
+      .then(async res => {
+        try {
+          return await res.json()
+        } catch (error) {
+          return { error: res.statusText }
+        }
+      })
+      .then(json => {
+        if (json.error) {
+          throw json.error
+        } else {
+          button.textContent = 'Saved'
+        }
+      })
+      .catch(error => {
+        alert(String(error))
+        button.textContent = 'Save'
+      })
   }
 
   addSection(title: string) {
