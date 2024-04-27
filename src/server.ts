@@ -29,6 +29,7 @@ import { decodeHTML } from './html'
 import { setupKnex } from './knex'
 import { pkg } from './pkg'
 import { storeContact, storeRequest } from './store'
+import { applyTemplates } from './template'
 
 setupKnex()
 
@@ -489,26 +490,39 @@ function isBufferStartsWith(content: Buffer, prefix: string): boolean {
   return content.subarray(0, prefix.length).toString().toLowerCase() == prefix
 }
 
-function sendHTML(req: Request, res: Response, content: Buffer, file: string) {
+function sendHTML(
+  req: Request,
+  res: Response,
+  content: Buffer | string,
+  file: string,
+) {
   res.setHeader('Content-Type', 'text/html')
 
   if (req.session.auto_cms_enabled) {
     res.write(content)
-    res.write('<script src="/auto-cms.js"></script>')
-  } else if (config.enabled_multi_lang) {
+    res.end('<script src="/auto-cms.js"></script>')
+    return
+  }
+
+  if (config.enabled_template) {
+    content = applyTemplates({
+      site_dir,
+      html: content.toString(),
+      file,
+    })
+  }
+
+  if (config.enabled_multi_lang) {
     // TODO load lang from cookie
     let lang = env.AUTO_CMS_DEFAULT_LANG
-    res.write(
-      translateHTML({
-        html: content.toString(),
-        file: file + LangFileSuffix,
-        lang: lang,
-      }),
-    )
-  } else {
-    res.write(content)
+    content = translateHTML({
+      html: content.toString(),
+      file: file + LangFileSuffix,
+      lang: lang,
+    })
   }
-  res.end()
+
+  res.end(content)
 }
 
 function sendBuffer(res: Response, content: Buffer) {

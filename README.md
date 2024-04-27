@@ -20,6 +20,8 @@ Auto turn any webpage into editable CMS without coding.
   - [ ] see which pages are using the media
   - [x] support image
   - [ ] support video / audio
+- [x] Reuse html template
+  - For common header, footer, e.t.c.
 - [ ] style editing
   - text alignment
   - text color

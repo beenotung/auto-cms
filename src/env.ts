@@ -12,6 +12,7 @@ export let env = {
   AUTO_CMS_AUTO_LOGIN: 'false',
   AUTO_CMS_AUTO_BACKUP: 'true',
   AUTO_CMS_PASSWORD: '',
+  AUTO_CMS_TEMPLATE: 'true',
   AUTO_CMS_MULTI_LANG: 'true',
   AUTO_CMS_DEFAULT_LANG: 'en' as const,
   SUBMIT_CONTACT_RESULT_PAGE: 'default' as const,
@@ -50,5 +51,6 @@ export function isEnabled(key: keyof typeof env) {
 
 export let config = {
   enabled_auto_login: isEnabled('AUTO_CMS_AUTO_LOGIN'),
+  enabled_template: isEnabled('AUTO_CMS_TEMPLATE'),
   enabled_multi_lang: isEnabled('AUTO_CMS_MULTI_LANG'),
 }
