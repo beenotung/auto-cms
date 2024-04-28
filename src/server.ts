@@ -98,28 +98,67 @@ app.use((req, res, next) => {
     return next()
   }
 
-  let dir_pathname = dirname(dirname(req.path))
-  let dir = resolve(join(site_dir, dir_pathname))
-  if (!dir.startsWith(site_dir)) {
-    return next()
+  let file_path = resolvePathname({ site_dir, pathname: dirname(req.path) })
+  if ('error' in file_path) {
+    res.status(500)
+    next(file_path.error)
+    return
   }
 
-  let filenames = readdirSync(dir)
+  let dir = dirname(file_path.file)
 
-  res.end(/* html */ `<!DOCTYPE html>
+  let dir_pathname = dir.replace(site_dir, '')
+  if (dir_pathname == '') {
+    dir_pathname = '/'
+  }
+
+  let title = escapeHTML(`File List of ${dir_pathname}`)
+
+  res.write(/* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Submitted</title>
+  <title>${title}</title>
 </head>
 <body>
-  ${filenames
-    .map(filename => {
-      let href = join(dir_pathname, filename)
-      return /* html */ `<div><a href="${href}">${filename}</a></div>`
-    })
-    .join('\n')}
+  <h1>${title}</h1>
+`)
+
+  if (dir_pathname != '/') {
+    let parent_pathname = dirname(dir_pathname)
+    let parent_href = parent_pathname
+    if (!parent_href.endsWith('/')) {
+      parent_href += '/'
+    }
+    parent_href += '__list__'
+    res.write(/* html */ `
+  <nav><a href="${parent_href}">Back to ${parent_pathname}</a></nav>
+`)
+  }
+
+  res.write(/* html */ `
+  <ol>`)
+
+  let filenames = readdirSync(dir)
+  for (let filename of filenames) {
+    let href = join(dir.replace(site_dir, '/'), filename)
+    let file = join(dir, filename)
+    let stat = statSync(file)
+    let type = '[F]'
+    if (stat.isDirectory()) {
+      type = '[D]'
+      if (!href.endsWith('/')) {
+        href += '/'
+      }
+      href += '__list__'
+    }
+    res.write(/* html */ `
+    <li>${type} <a href="${href}">${escapeHTML(filename)}</a></li>`)
+  }
+
+  res.end(/* html */ `
+  </ol>
 </body>
 </html>
 `)
