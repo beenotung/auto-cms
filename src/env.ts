@@ -51,6 +51,7 @@ export function isEnabled(key: keyof typeof env) {
 
 export let config = {
   enabled_auto_login: isEnabled('AUTO_CMS_AUTO_LOGIN'),
+  enabled_auto_backup: isEnabled('AUTO_CMS_AUTO_BACKUP'),
   enabled_template: isEnabled('AUTO_CMS_TEMPLATE'),
   enabled_multi_lang: isEnabled('AUTO_CMS_MULTI_LANG'),
 }

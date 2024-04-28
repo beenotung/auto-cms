@@ -4,7 +4,9 @@ import { config, env } from './env'
 import { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
+  copyFileSync,
   existsSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   renameSync,
@@ -30,6 +32,8 @@ import { setupKnex } from './knex'
 import { pkg } from './pkg'
 import { storeContact, storeRequest } from './store'
 import { applyTemplates } from './template'
+import { exist } from '@beenotung/tslib'
+import { resolvePathname } from './file'
 
 setupKnex()
 
@@ -121,8 +125,9 @@ app.use((req, res, next) => {
 `)
 })
 
+// save file (update html page, or upload image)
 let parse_html_middleware = express.text({
-  type: 'text/html',
+  type: ['text/html', 'text/html; charset=utf-8'],
   limit: env.FILE_SIZE_LIMIT,
 })
 let maxFileSize = bytes.parse(env.FILE_SIZE_LIMIT)
@@ -135,6 +140,7 @@ let createUploadForm = (options: { dir: string; filename: string }) =>
     maxFileSize,
     filter: part => part.name == 'file',
   })
+type PutRequest = Request & { vars: { file: string } }
 app.put(
   '/auto-cms/file',
   guardCMS,
@@ -145,16 +151,31 @@ app.put(
       res.json({ error: 'missing X-Pathname in header' })
       return
     }
-    if (req.headers['content-type'] == 'text/html') {
+    let path = resolvePathname({ site_dir, pathname, mkdir: true })
+    if ('error' in path) {
+      res.status(500)
+      res.json({ error: path.error })
+      return
+    }
+    // upload text/html
+    if (req.header('Content-Type')?.includes('text/html')) {
+      if (!path.exists) {
+        res.status(400)
+        res.json({ error: 'target file not found' })
+        return
+      }
+      ;(req as PutRequest).vars = path
       next()
       return
     }
-    let dir = resolve(join(site_dir, dirname(pathname)))
-    let filename = basename(pathname)
+    // upload multipart form data
+    let dir = dirname(path.file)
+    let filename = basename(path.file)
     let form = createUploadForm({ dir, filename })
     form.parse(req, (err, fields, files) => {
       if (err) {
-        next(err)
+        res.status(500)
+        res.json({ error: String(err) })
         return
       }
       res.json({})
@@ -162,36 +183,68 @@ app.put(
   },
   parse_html_middleware,
   (req, res, next) => {
-    let pathname = req.header('X-Pathname')!
-    let force = req.header('X-Force')!
+    let file = (req as PutRequest).vars.file
     let content = req.body.trim() as string
     if (!content) {
       res.status(400)
       res.json({ error: 'empty content' })
       return
     }
-    let file = resolveSiteFile(pathname)
-    if (!file && force) {
-      if (!pathname.endsWith('.html')) {
-        // e.g. '/contact'
-        if (!pathname.endsWith('/')) {
-          pathname += '/'
-        }
-        // e.g. '/contact/'
-        pathname += 'index.html'
-      }
-      // e.g. '/contact/index.html'
-      file = resolve(join(site_dir, pathname))
-    }
-    if (!file) {
-      res.status(400)
-      res.json({ error: 'target file not found' })
-      return
-    }
     saveHTMLFile(file, content + '\n')
-    res.json({})
+    res.json({ message: 'saved to target file' })
   },
 )
+
+// copy file (restore html from backup version, or save as new page)
+app.put('/auto-cms/file/copy', guardCMS, (req, res, next) => {
+  let from_pathname = req.header('X-From-Pathname')
+  if (!from_pathname) {
+    res.status(400)
+    res.json({ error: 'missing X-From-Pathname in header' })
+    return
+  }
+
+  let to_pathname = req.header('X-To-Pathname')
+  if (!to_pathname) {
+    res.status(400)
+    res.json({ error: 'missing X-To-Pathname in header' })
+    return
+  }
+
+  let from_path = resolvePathname({
+    site_dir,
+    pathname: from_pathname,
+  })
+  if ('error' in from_path) {
+    res.status(500)
+    res.json({ error: from_path.error })
+    return
+  }
+  if (!from_path.exists) {
+    res.status(400)
+    res.json({ error: 'resolved from path does not exist' })
+    return
+  }
+
+  let to_path = resolvePathname({
+    site_dir,
+    pathname: to_pathname,
+    mkdir: true,
+  })
+  if ('error' in to_path) {
+    res.status(500)
+    res.json({ error: to_path.error })
+    return
+  }
+
+  if (config.enabled_auto_backup && to_path.exists) {
+    saveBackup(to_path.file)
+  }
+
+  copyFileSync(from_path.file, to_path.file)
+
+  res.json({ message: 'saved to target file' })
+})
 
 function saveHTMLFile(file: string, content: string) {
   if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
@@ -274,14 +327,19 @@ app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
     res.json({ error: 'missing X-Pathname in header' })
     return
   }
-  let file = resolveSiteFile(pathname)
-  if (!file) {
+  let path = resolvePathname({ site_dir, pathname })
+  if ('error' in path) {
+    res.status(500)
+    res.json({ error: path.error })
+    return
+  }
+  if (!path.exists) {
     res.status(400)
     res.json({ error: 'target file not found' })
     return
   }
-  unlinkSync(file)
-  res.json({})
+  unlinkSync(path.file)
+  res.json({ message: 'deleted file' })
 })
 
 app.get('/auto-cms/images', guardCMS, (req, res, next) => {
@@ -323,48 +381,6 @@ app.get('/auto-cms', (req, res, next) => {
 })
 
 let site_dir = resolve(env.SITE_DIR)
-
-// 0. ../file -> null
-// 1. contact.html -> contact.html
-// 2. contact -> contact
-// 3. contact -> contact/index.html
-// 4. contact -> contact.html
-function resolveSiteFile(pathname: string): string | null {
-  pathname = decodeURIComponent(pathname)
-
-  // use `resolve(join())` instead of `resolve()` to avoid resolving `/` pathname as root directory
-  let file = resolve(join(site_dir, pathname))
-
-  // 0. ../file -> null
-  if (!file.startsWith(site_dir)) return null
-
-  // 1. contact.html -> contact.html
-  if (file.endsWith('.html')) {
-    return existsSync(file) ? file : null
-  }
-
-  try {
-    let stat = statSync(file)
-
-    // 2. contact -> contact
-    if (stat.isFile()) return file
-
-    if (!stat.isDirectory()) return null
-
-    // 3. contact -> contact/index.html
-    let index = join(file, 'index.html')
-    if (existsSync(index)) return index
-
-    return null
-  } catch (error) {
-    let message = String(error)
-    if (!message.includes('ENOENT') && !message.includes('ENOTDIR')) throw error
-
-    // 4. contact -> contact.html
-    file += '.html'
-    return existsSync(file) ? file : null
-  }
-}
 
 type Image = {
   dir: string
@@ -479,8 +495,16 @@ app.use((req, res, next) => {
     return
   }
   try {
-    let file = resolveSiteFile(req.path)
-    if (!file) return next()
+    let path = resolvePathname({ site_dir, pathname: req.path })
+    if ('error' in path) {
+      next(path.error)
+      return
+    }
+    if (!path.exists) {
+      next()
+      return
+    }
+    let file = path.file
     let ext = extname(file)
     if (ext == '.html') {
       let content = readFileSync(file)

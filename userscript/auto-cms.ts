@@ -138,6 +138,17 @@ function getHighestZIndex() {
   return max
 }
 
+async function fetch_json<T>(url: string, init: RequestInit) {
+  return fetch(url, init)
+    .then(res => res.json().catch(err => ({ error: res.statusText })))
+    .then(json => {
+      if (json.error) {
+        throw json.error
+      }
+      return json as T
+    })
+}
+
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
@@ -475,10 +486,27 @@ class AutoCMSMenu extends HTMLElement {
     })
 
     let cmsSection = this.addSection('CMS')
-    this.addMenuItem(cmsSection, 'Save', event => {
-      this.saveHTML(event, { pathname: location.pathname })
+    this.addMenuItem(cmsSection, 'Save', async event => {
+      let button = event.target as HTMLButtonElement
+      try {
+        button.textContent = 'Saving'
+        this.flushTeardownFns()
+        await fetch_json('/auto-cms/file', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'X-Pathname': location.pathname,
+          },
+          body: exportHTML(),
+        })
+        button.textContent = 'Saved'
+      } catch (error) {
+        alert(String(error))
+        button.textContent = 'Save'
+      }
     })
-    this.addMenuItem(cmsSection, 'Save As', async event => {
+    this.addMenuItem(cmsSection, 'Save Unmodified As', async event => {
+      let button = event.target as HTMLButtonElement
       let pathname = prompt('Pathname:', location.pathname)
       if (!pathname) return
       let res = await fetch(pathname)
@@ -489,7 +517,20 @@ class AutoCMSMenu extends HTMLElement {
         let ans = confirm(`Confirm to save to new file" ${pathname} ?`)
         if (!ans) return
       }
-      this.saveHTML(event, { pathname, force: true })
+      try {
+        button.textContent = 'Saving'
+        await fetch_json('/auto-cms/file/copy', {
+          method: 'PUT',
+          headers: {
+            'X-From-Pathname': location.pathname,
+            'X-To-Pathname': pathname,
+          },
+        })
+        button.textContent = 'Saved'
+      } catch (error) {
+        alert(String(error))
+        button.textContent = 'Save Unmodified As'
+      }
     })
     this.addMenuItem(cmsSection, 'Show Files', event => {
       let url = location.origin + location.pathname
@@ -499,39 +540,6 @@ class AutoCMSMenu extends HTMLElement {
       url += '__list__'
       window.open(url, '_blank')
     })
-  }
-
-  saveHTML(event: MouseEvent, options: { pathname: string; force?: boolean }) {
-    this.flushTeardownFns()
-    let button = event.target as HTMLButtonElement
-    button.textContent = 'Saving'
-    fetch('/auto-cms/file', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'text/html',
-        'X-Pathname': options.pathname,
-        'X-Force': options.force ? 'true' : 'false',
-      },
-      body: exportHTML(),
-    })
-      .then(async res => {
-        try {
-          return await res.json()
-        } catch (error) {
-          return { error: res.statusText }
-        }
-      })
-      .then(json => {
-        if (json.error) {
-          throw json.error
-        } else {
-          button.textContent = 'Saved'
-        }
-      })
-      .catch(error => {
-        alert(String(error))
-        button.textContent = 'Save'
-      })
   }
 
   addSection(title: string) {
