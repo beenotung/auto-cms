@@ -149,6 +149,19 @@ async function fetch_json<T>(url: string, init: RequestInit) {
     })
 }
 
+async function resolveFilePathname(pathname: string) {
+  let json = await fetch_json<{ pathname: string; exists: string }>(
+    '/auto-cms/file',
+    {
+      method: 'OPTIONS',
+      headers: {
+        'X-Pathname': pathname,
+      },
+    },
+  )
+  return json
+}
+
 class AutoCMSMenu extends HTMLElement {
   static instance?: AutoCMSMenu
 
@@ -512,8 +525,9 @@ class AutoCMSMenu extends HTMLElement {
         location.pathname.replaceAll(/_bk[0-9T]{15}/g, ''),
       )
       if (!pathname) return
-      let res = await fetch(pathname)
-      if (res.status == 200) {
+      let path = await resolveFilePathname(pathname)
+      pathname = path.pathname
+      if (path.exists) {
         let ans = confirm(`Confirm to override file: ${pathname} ?`)
         if (!ans) return
       } else {

@@ -125,6 +125,27 @@ app.use((req, res, next) => {
 `)
 })
 
+// resolve implicit index.html or .html suffix
+app.options('/auto-cms/file', guardCMS, (req, res, next) => {
+  let pathname = req.header('X-Pathname')
+  if (!pathname) {
+    res.status(400)
+    res.json({ error: 'missing X-Pathname in header' })
+    return
+  }
+  let path = resolvePathname({ site_dir, pathname, mkdir: true })
+  if ('error' in path) {
+    res.status(500)
+    res.json({ error: path.error })
+    return
+  }
+  pathname = path.file.replace(site_dir, '')
+  if (pathname == '') {
+    pathname = '/'
+  }
+  res.json({ pathname, exists: path.exists })
+})
+
 // save file (update html page, or upload image)
 let parse_html_middleware = express.text({
   type: ['text/html', 'text/html; charset=utf-8'],
