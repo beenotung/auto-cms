@@ -10,6 +10,7 @@ import {
   readFileSync,
   readdirSync,
   renameSync,
+  rmdirSync,
   statSync,
   unlinkSync,
   writeFileSync,
@@ -211,14 +212,15 @@ app.put(
       res.json({ error: 'missing X-Pathname in header' })
       return
     }
-    let path = resolvePathname({ site_dir, pathname, mkdir: true })
-    if ('error' in path) {
-      res.status(500)
-      res.json({ error: path.error })
-      return
-    }
+
     // upload text/html
     if (req.header('Content-Type')?.includes('text/html')) {
+      let path = resolvePathname({ site_dir, pathname, mkdir: true })
+      if ('error' in path) {
+        res.status(500)
+        res.json({ error: path.error })
+        return
+      }
       if (!path.exists) {
         res.status(400)
         res.json({ error: 'target file not found' })
@@ -228,9 +230,24 @@ app.put(
       next()
       return
     }
+
     // upload multipart form data
-    let dir = dirname(path.file)
-    let filename = basename(path.file)
+    let file = resolve(join(site_dir, pathname))
+    if (!file.startsWith(site_dir)) {
+      res.status(400)
+      res.json({ error: 'resolved pathname is out of the site directory' })
+      return
+    }
+    if (
+      existsSync(file) &&
+      statSync(file).isDirectory() &&
+      readdirSync(file).length == 0
+    ) {
+      rmdirSync(file)
+    }
+    let dir = dirname(file)
+    let filename = basename(file)
+    mkdirSync(dir, { recursive: true })
     let form = createUploadForm({ dir, filename })
     form.parse(req, (err, fields, files) => {
       if (err) {
