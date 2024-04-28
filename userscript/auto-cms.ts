@@ -530,6 +530,10 @@ class AutoCMSMenu extends HTMLElement {
           },
         })
         button.textContent = 'Saved'
+        let ans = confirm(`Open ${pathname} ?`)
+        if (ans) {
+          window.open(location.origin + pathname, '_blank')
+        }
       } catch (error) {
         alert(String(error))
         button.textContent = 'Save Unmodified As'
