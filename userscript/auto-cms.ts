@@ -507,7 +507,10 @@ class AutoCMSMenu extends HTMLElement {
     })
     this.addMenuItem(cmsSection, 'Save Unmodified As', async event => {
       let button = event.target as HTMLButtonElement
-      let pathname = prompt('Pathname:', location.pathname)
+      let pathname = prompt(
+        'Pathname:',
+        location.pathname.replaceAll(/_bk[0-9T]{15}/g, ''),
+      )
       if (!pathname) return
       let res = await fetch(pathname)
       if (res.status == 200) {
