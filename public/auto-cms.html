@@ -64,7 +64,7 @@
         flex-wrap: wrap;
         justify-content: space-between;
       }
-      code.image--url {
+      code.url {
         background-color: #aaaaaa20;
         border-radius: 0.25rem;
         padding: 0.25rem;
@@ -124,13 +124,15 @@
         <input type="file" class="uploadDialog--file" />
         <figure>
           <img />
+          <video controls></video>
+          <audio controls></audio>
           <figcaption>
-            <div class="image--filename" data-text="filename"></div>
-            <code
-              class="image--url"
-              data-text="url"
-              onclick="copyUrl(this)"
-            ></code>
+            <div>Filename: <span class="uploadDialog--filename"></span></div>
+            <div>File size: <span class="uploadDialog--file-size"></span></div>
+            <div>
+              Pathname:
+              <code class="url" data-text="url" onclick="copyUrl(this)"></code>
+            </div>
           </figcaption>
         </figure>
         <div>
@@ -172,11 +174,7 @@
                 <button data-onclick="delete">delete</button>
               </div>
             </div>
-            <code
-              class="image--url"
-              data-text="url"
-              onclick="copyUrl(this)"
-            ></code>
+            <code class="url" data-text="url" onclick="copyUrl(this)"></code>
           </figcaption>
         </figure>
       </template>
@@ -206,49 +204,88 @@
 
         let input = uploadDialog.querySelector('.uploadDialog--file')
         let img = uploadDialog.querySelector('img')
-        let imageFilenameNode = uploadDialog.querySelector('.image--filename')
-        let imageUrlNode = uploadDialog.querySelector('.image--url')
+        let video = uploadDialog.querySelector('video')
+        let audio = uploadDialog.querySelector('audio')
+        let mediaNodes = [img, video, audio]
+        let imageFilenameNode = uploadDialog.querySelector(
+          '.uploadDialog--filename',
+        )
+        let imageFileSizeNode = uploadDialog.querySelector(
+          '.uploadDialog--file-size',
+        )
+        let codeUrlNode = uploadDialog.querySelector('code.url')
         let uploadButton = uploadDialog.querySelector('.uploadDialog--upload')
-        img.src = ''
+        for (let node of mediaNodes) {
+          node.src = ''
+          node.hidden = true
+        }
         imageFilenameNode.textContent = ''
-        imageUrlNode.textContent = image?.url || dir.url + '/?'
-        uploadButton.textContent = 'Confirm Upload'
+        imageFileSizeNode.textContent = ''
+        codeUrlNode.textContent = image?.url || dir.url + '/?'
+        uploadButton.textContent = 'Waiting file selection...'
         uploadButton.disabled = true
         input.onchange = () => {
           let file = input.files[0]
           if (!file) return
+          uploadButton.textContent = 'loading file...'
+          uploadButton.disabled = true
           let reader = new FileReader()
-          reader.onload = () => {
-            img.onload = () => {
-              img.onload = null
-              uploadButton.disabled = false
-              uploadButton.onclick = event => {
-                let formData = new FormData()
-                formData.set('file', file)
-                fetch('/auto-cms/file', {
-                  method: 'PUT',
-                  headers: {
-                    'X-Pathname': imageUrlNode.textContent,
-                  },
-                  body: formData,
+          let enableUpload = () => {
+            uploadButton.disabled = false
+            uploadButton.textContent = 'Upload File'
+            uploadButton.onclick = event => {
+              let formData = new FormData()
+              formData.set('file', file)
+              fetch('/auto-cms/file', {
+                method: 'PUT',
+                headers: {
+                  'X-Pathname': encodeURIComponent(codeUrlNode.textContent),
+                },
+                body: formData,
+              })
+                .then(res => res.json())
+                .then(json => {
+                  if (json.error) {
+                    alert(json.error)
+                    return
+                  }
+                  uploadButton.onclick = null
+                  uploadButton.textContent = 'uploaded'
+                  cb()
                 })
-                  .then(res => res.json())
-                  .then(json => {
-                    if (json.error) {
-                      alert(json.error)
-                      return
-                    }
-                    uploadButton.onclick = null
-                    uploadButton.textContent = 'uploaded'
-                    cb()
-                  })
-              }
             }
-            // TODO auto compress to webp
+          }
+          reader.onload = () => {
+            for (let node of mediaNodes) {
+              node.onload = null
+              node.src = ''
+              node.hidden = true
+              // for img
+              node.onload = () => {
+                node.onload = null
+                if (!node.src) return
+                enableUpload()
+              }
+              // for video
+              node.onloadeddata = node.onload
+            }
             let mimeType = reader.result.match(/data:(.*?),?;/)[1]
-            img.src = reader.result
+            if (mimeType.startsWith('image/')) {
+              // TODO auto compress image to webp
+              img.hidden = false
+              img.src = reader.result
+            } else if (mimeType.startsWith('video/')) {
+              video.hidden = false
+              video.src = reader.result
+            } else if (mimeType.startsWith('audio/')) {
+              audio.hidden = false
+              audio.src = reader.result
+            } else {
+              enableUpload()
+            }
             imageFilenameNode.textContent = file.name
-            imageUrlNode.textContent = image?.url || dir.url + '/' + file.name
+            imageFileSizeNode.textContent = file.size.toLocaleString()
+            codeUrlNode.textContent = image?.url || dir.url + '/' + file.name
           }
           reader.readAsDataURL(file)
         }

@@ -232,7 +232,7 @@ app.put(
     }
 
     // upload multipart form data
-    let file = resolve(join(site_dir, pathname))
+    let file = resolve(join(site_dir, decodeURIComponent(pathname)))
     if (!file.startsWith(site_dir)) {
       res.status(400)
       res.json({ error: 'resolved pathname is out of the site directory' })
