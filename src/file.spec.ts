@@ -12,6 +12,23 @@ describe('resolvePathname()', () => {
     })
   })
 
+  it('should reject if the pathname is .env files', () => {
+    var out = resolvePathname({ site_dir, pathname: '/.env' })
+    expect(out).to.deep.equals({
+      error: 'resolved pathname is forbidden',
+    })
+
+    var out = resolvePathname({ site_dir, pathname: '/.env.docker' })
+    expect(out).to.deep.equals({
+      error: 'resolved pathname is forbidden',
+    })
+
+    var out = resolvePathname({ site_dir, pathname: '/docker.env' })
+    expect(out).to.deep.equals({
+      error: 'resolved pathname is forbidden',
+    })
+  })
+
   it('should preserve .html file', () => {
     var out = resolvePathname({ site_dir, pathname: '/file3.html' })
     expect(out).to.deep.equals({

@@ -485,15 +485,6 @@ app.use((req, res, next) => {
     next()
     return
   }
-  let filename = basename(req.path)
-  if (
-    filename == '.env' ||
-    filename.startsWith('.env.') ||
-    filename.endsWith('.env')
-  ) {
-    next()
-    return
-  }
   try {
     let path = resolvePathname({ site_dir, pathname: req.path })
     if ('error' in path) {

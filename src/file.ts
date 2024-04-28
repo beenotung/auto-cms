@@ -1,8 +1,9 @@
 import { existsSync, mkdirSync, statSync } from 'fs'
-import { join, resolve } from 'path'
+import { basename, join, resolve } from 'path'
 
 /**
  * 0. ../file -> reject (out of site directory)
+ * 0. /.env -> reject (forbidden files)
  * 1. /contact.html -> /contact.html
  * 2. /contact -> /contact (if file exists without extension)
  * 3. /contact -> /contact/index.html (if dir exists)
@@ -28,6 +29,16 @@ export function resolvePathname(options: {
   // 0. ../file -> reject (out of site directory)
   if (!file.startsWith(site_dir)) {
     return { error: 'resolved pathname is out of the site directory' }
+  }
+
+  // 0. /.env -> reject (forbidden files)
+  let filename = basename(file)
+  if (
+    filename == '.env' ||
+    filename.startsWith('.env.') ||
+    filename.endsWith('.env')
+  ) {
+    return { error: 'resolved pathname is forbidden' }
   }
 
   // 1. /contact.html -> /contact.html
