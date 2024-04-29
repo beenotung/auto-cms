@@ -155,7 +155,7 @@ async function resolveFilePathname(pathname: string) {
     {
       method: 'OPTIONS',
       headers: {
-        'X-Pathname': pathname,
+        'X-Pathname': encodeURIComponent(pathname),
       },
     },
   )
@@ -540,7 +540,7 @@ class AutoCMSMenu extends HTMLElement {
           method: 'PUT',
           headers: {
             'X-From-Pathname': location.pathname,
-            'X-To-Pathname': pathname,
+            'X-To-Pathname': encodeURIComponent(pathname),
           },
         })
         button.textContent = 'Saved'
