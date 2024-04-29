@@ -121,6 +121,15 @@ app.use((req, res, next) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
+  <style>
+    .highlight {
+      /* font-weight: bold; */
+      background-color: yellow;
+    }
+    body {
+      font-family: monospace;
+    }
+  </style>
 </head>
 <body>
   <h1>${title}</h1>
@@ -142,6 +151,7 @@ app.use((req, res, next) => {
   <ol>`)
 
   let filenames = readdirSync(dir)
+  let base_filename = basename(file_path.file).replaceAll(/_bk[0-9T]{15}/g, '')
   for (let filename of filenames) {
     let href = join(dir.replace(site_dir, '/'), filename)
     let file = join(dir, filename)
@@ -154,8 +164,13 @@ app.use((req, res, next) => {
       }
       href += '__list__'
     }
+    let className =
+      filename.replaceAll(/_bk[0-9T]{15}/g, '') == base_filename
+        ? 'highlight'
+        : ''
+    let filename_html = escapeHTML(filename)
     res.write(/* html */ `
-    <li>${type} <a href="${href}">${escapeHTML(filename)}</a></li>`)
+    <li>${type} <a href="${href}" class="${className}">${filename_html}</a></li>`)
   }
 
   res.end(/* html */ `
