@@ -205,6 +205,7 @@ app.options('/auto-cms/file', guardCMS, (req, res, next) => {
 let parse_html_middleware = express.text({
   type: ['text/html', 'text/html; charset=utf-8'],
   limit: env.FILE_SIZE_LIMIT,
+  defaultCharset: 'utf-8',
 })
 let maxFileSize = bytes.parse(env.FILE_SIZE_LIMIT)
 let createUploadForm = (options: { dir: string; filename: string }) =>
