@@ -396,20 +396,14 @@
                     })
                 }
               }
-              renderTemplate(node.querySelector('[data-bind="files"]'), dir)
-              let subFileNodes = node.querySelectorAll(
-                '.sub-files > .media-file',
-              )
-              if (subFileNodes.length == 0) {
-                node.querySelector('.sub-files').remove()
+              if (dir.files.length > 0) {
+                renderTemplate(node.querySelector('[data-bind="files"]'), dir)
               }
 
-              renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
+              if (dir.dirs.length > 0) {
+                renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
+              }
               let subDirNodes = node.querySelectorAll('.sub-dirs > .dir')
-              if (subDirNodes.length == 0) {
-                node.querySelector('.sub-dirs').remove()
-              }
-
               for (let i = 0; i < subDirNodes.length; i++) {
                 let subDirNode = subDirNodes[i]
                 let subDir = dir.dirs[i]
