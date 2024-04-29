@@ -419,8 +419,8 @@ app.delete('/auto-cms/file', guardCMS, (req, res, next) => {
   res.json({ message: 'deleted file' })
 })
 
-app.get('/auto-cms/images', guardCMS, (req, res, next) => {
-  let dir = scanImageDir(site_dir)
+app.get('/auto-cms/media-list', guardCMS, (req, res, next) => {
+  let dir = scanMediaDir(site_dir)
   res.json({ dir })
 })
 
@@ -459,50 +459,61 @@ app.get('/auto-cms', (req, res, next) => {
 
 let site_dir = resolve(env.SITE_DIR)
 
-type Image = {
+type MediaFile = {
   dir: string
   filename: string
   size: string
   url: string
+  mimetype: string
 }
 
 type Dir = {
   url: string
   name: string
-  images: Image[]
+  files: MediaFile[]
   dirs: Dir[]
-  total_image_count: number
+  total_media_count: number
 }
 
-function scanImageDir(dir: string): Dir {
+function scanMediaDir(dir: string): Dir {
   let result: Dir = {
     url: dir.replace(site_dir, ''),
     name: basename(dir),
-    images: [],
+    files: [],
     dirs: [],
-    total_image_count: 0,
+    total_media_count: 0,
   }
   let filenames = readdirSync(dir)
   for (let filename of filenames) {
     let file = join(dir, filename)
     let stat = statSync(file)
     if (stat.isDirectory()) {
-      let dir = scanImageDir(file)
-      if (dir.total_image_count > 0) {
-        result.total_image_count += dir.total_image_count
+      let dir = scanMediaDir(file)
+      if (dir.total_media_count > 0) {
+        result.total_media_count += dir.total_media_count
         result.dirs.push(dir)
       }
     } else if (stat.isFile()) {
       let mime = detectFilenameMime(filename)
-      if (!mime.startsWith('image/')) continue
+      if (
+        !mime.startsWith('image/') &&
+        !mime.startsWith('video/') &&
+        !mime.startsWith('audio/')
+      ) {
+        continue
+      }
       let url_dir = dir.replace(site_dir, '')
-      result.images.push({
+      if (url_dir == '') {
+        url_dir = '/'
+      }
+      result.files.push({
         dir: url_dir,
         filename,
         size: format_byte(stat.size),
         url: join(url_dir, filename),
+        mimetype: mime,
       })
-      result.total_image_count++
+      result.total_media_count++
     }
   }
   return result

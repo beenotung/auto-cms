@@ -26,6 +26,12 @@
       }
       .dir--meta {
         display: inline-block;
+        padding-top: 0.5rem;
+        padding-inline-start: 0.5rem;
+      }
+      summary > .dir--meta {
+        padding-top: 0;
+        padding-inline-start: 0;
       }
       .dir--buttons {
         margin: 0.25rem 1rem;
@@ -59,7 +65,7 @@
         max-height: 100dvh;
         background-image: url('/auto-cms/transparent-grid.svg');
       }
-      .image--caption--upper {
+      .media-file--caption--upper {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
@@ -117,7 +123,7 @@
       </div>
     </form>
     <div data-show="enabled" hidden>
-      <h2>Images</h2>
+      <h2>Media Files</h2>
       <dialog id="uploadDialog">
         <button onclick="uploadDialog.close()">close</button>
         <h2 class="uploadDialog--title"></h2>
@@ -142,32 +148,57 @@
       <div id="rootDir" data-template="dir" data-bind="dir"></div>
       <template data-name="dir">
         <div class="dir" data-id="id">
-          <details>
+          <div class="dir--meta">
+            <div>dir: <span data-text="name"></span></div>
+            <div class="dir--buttons">
+              <button data-onclick="upload">upload</button>
+            </div>
+            <div>
+              total media files: <span data-text="total_media_count"></span>
+            </div>
+          </div>
+          <details data-if="has_dirs">
             <summary>
               <div class="dir--meta">
-                <div>dir: <span data-text="name"></span></div>
-                <div class="dir--buttons">
-                  <button data-onclick="upload">upload</button>
-                </div>
-                <div>
-                  total images: <span data-text="total_image_count"></span>
-                </div>
                 <div>sub-dirs: <span data-text="sub_dir_count"></span></div>
               </div>
             </summary>
             <div class="sub-dirs" data-template="dir" data-bind="dirs"></div>
-            <div data-template="image" data-bind="images"></div>
+          </details>
+          <details data-if="has_files">
+            <summary>
+              <div class="dir--meta">
+                <div>sub-files: <span data-text="sub_file_count"></span></div>
+              </div>
+            </summary>
+            <div
+              class="sub-files"
+              data-template="media-file"
+              data-bind="files"
+            ></div>
           </details>
         </div>
       </template>
-      <template data-name="image">
-        <figure class="image">
-          <img data-src="url" loading="lazy" />
+      <template data-name="media-file">
+        <figure class="media-file">
+          <img data-if="is_img" data-src="url" loading="lazy" />
+          <video
+            controls
+            data-if="is_video"
+            data-src="url"
+            loading="lazy"
+          ></video>
+          <audio
+            controls
+            data-if="is_audio"
+            data-src="url"
+            loading="lazy"
+          ></audio>
           <figcaption>
-            <div class="image--caption--upper">
+            <div class="media-file--caption--upper">
               <div>
-                <div class="image--filename" data-text="filename"></div>
-                <div class="image--size" data-text="size"></div>
+                <div class="media-file--filename" data-text="filename"></div>
+                <div class="media-file--size" data-text="size"></div>
               </div>
               <div>
                 <button data-onclick="replace">replace</button>
@@ -197,10 +228,11 @@
           span.remove()
         }, 3000)
       }
-      function uploadImage(dir, image, cb) {
-        uploadDialog.querySelector('.uploadDialog--title').textContent = image
-          ? `Replace "${image.filename}"`
-          : `Upload image to "${dir.name}"`
+      function uploadMediaFile(dir, media_file, cb) {
+        uploadDialog.querySelector('.uploadDialog--title').textContent =
+          media_file
+            ? `Replace "${media_file.filename}"`
+            : `Upload media file to "${dir.name}"`
 
         let input = uploadDialog.querySelector('.uploadDialog--file')
         let img = uploadDialog.querySelector('img')
@@ -221,12 +253,18 @@
         }
         imageFilenameNode.textContent = ''
         imageFileSizeNode.textContent = ''
-        codeUrlNode.textContent = image?.url || dir.url + '/?'
+        codeUrlNode.textContent = media_file?.url || dir.url + '/?'
         uploadButton.textContent = 'Waiting file selection...'
         uploadButton.disabled = true
         input.onchange = () => {
           let file = input.files[0]
           if (!file) return
+          for (let char of ['#', ':', '/']) {
+            if (file.name.includes(char)) {
+              alert(`Cannot contains "${char}" in filename`)
+              return
+            }
+          }
           uploadButton.textContent = 'loading file...'
           uploadButton.disabled = true
           let reader = new FileReader()
@@ -285,7 +323,7 @@
             }
             imageFilenameNode.textContent = file.name
             imageFileSizeNode.textContent = file.size.toLocaleString()
-            codeUrlNode.textContent = image?.url || dir.url + '/' + file.name
+            codeUrlNode.textContent = file?.url || dir.url + '/' + file.name
           }
           reader.readAsDataURL(file)
         }
@@ -296,21 +334,27 @@
       getJSON('/auto-cms/status', json => {
         document.body.dataset.enabled = json.enabled
         if (json.enabled) {
-          getJSON('/auto-cms/images', json => {
+          getJSON('/auto-cms/media-list', json => {
             console.log(json)
             // renderTemplate(imageList, json)
             let id = 0
             function showDir(host, dir) {
               dir.id = 'dir-' + ++id
               dir.sub_dir_count = dir.dirs.length
+              dir.sub_file_count = dir.files.length
+              dir.has_dirs = dir.dirs.length > 0
+              dir.has_files = dir.files.length > 0
               dir.upload = event => {
-                uploadImage(dir, null, () => {
+                uploadMediaFile(dir, null, () => {
                   event.target.textContent = 'uploaded'
                 })
               }
               renderTemplate(host, { dir })
+
               let node = document.getElementById(dir.id)
               if (!node) throw new Error('dir node not found: ' + dir.id)
+
+              let details = node.querySelector('details')
               node.onclick = event => {
                 if (event.target == node) {
                   details.open = false
@@ -320,44 +364,52 @@
                   })
                 }
               }
-              renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
-              let details = node.querySelector('details')
-              details.ontoggle = () => {
-                details.ontoggle = null
-                for (let image of dir.images) {
-                  image.replace = event => {
-                    if (event.target.tagName.toLowerCase() == 'input') return
-                    uploadImage(dir, image, () => {
-                      event.target.textContent = 'replaced'
-                    })
-                  }
-                  image.delete = event => {
-                    let confirm_text = 'confirm to delete'
-                    let ans = prompt(
-                      `${confirm_text} "${image.filename}"?`,
-                      confirm_text,
-                    )
-                    if (ans != confirm_text) return
-                    fetch('/auto-cms/file', {
-                      method: 'DELETE',
-                      headers: { 'X-Pathname': image.url },
-                    })
-                      .then(res => res.json())
-                      .then(json => {
-                        if (json.error) {
-                          alert(json.error)
-                          return
-                        }
-                        event.target.textContent = 'deleted'
-                      })
-                  }
+
+              for (let file of dir.files) {
+                file.is_img = file.mimetype.startsWith('image/')
+                file.is_video = file.mimetype.startsWith('video/')
+                file.is_audio = file.mimetype.startsWith('audio/')
+                file.replace = event => {
+                  if (event.target.tagName.toLowerCase() == 'input') return
+                  uploadMediaFile(dir, file, () => {
+                    event.target.textContent = 'replaced'
+                  })
                 }
-                renderTemplate(node.querySelector('[data-bind="images"]'), dir)
+                file.delete = event => {
+                  let confirm_text = 'confirm to delete'
+                  let ans = prompt(
+                    `${confirm_text} "${file.filename}"?`,
+                    confirm_text,
+                  )
+                  if (ans != confirm_text) return
+                  fetch('/auto-cms/file', {
+                    method: 'DELETE',
+                    headers: { 'X-Pathname': encodeURIComponent(file.url) },
+                  })
+                    .then(res => res.json())
+                    .then(json => {
+                      if (json.error) {
+                        alert(json.error)
+                        return
+                      }
+                      event.target.textContent = 'deleted'
+                    })
+                }
               }
+              renderTemplate(node.querySelector('[data-bind="files"]'), dir)
+              let subFileNodes = node.querySelectorAll(
+                '.sub-files > .media-file',
+              )
+              if (subFileNodes.length == 0) {
+                node.querySelector('.sub-files').remove()
+              }
+
+              renderTemplate(node.querySelector('[data-bind="dirs"]'), dir)
               let subDirNodes = node.querySelectorAll('.sub-dirs > .dir')
               if (subDirNodes.length == 0) {
                 node.querySelector('.sub-dirs').remove()
               }
+
               for (let i = 0; i < subDirNodes.length; i++) {
                 let subDirNode = subDirNodes[i]
                 let subDir = dir.dirs[i]
