@@ -343,7 +343,7 @@ function saveHTMLFile(file: string, content: string) {
   if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
     saveBackup(file)
   }
-  writeFileSync(file, content + '\n')
+  writeFileSync(file, content)
   saveLangFile(file + LangFileSuffix, content)
 }
 
