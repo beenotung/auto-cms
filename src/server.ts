@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import { print } from 'listening-on'
 import { config, env } from './env'
-import { basename, dirname, extname, join, resolve } from 'path'
+import path, { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
   readFileSync,
@@ -23,6 +23,7 @@ import {
   setupEasyNMT,
   translateHTML,
   translateText,
+  translateTraditional,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -41,6 +42,10 @@ console.log('Project Directory:', env.SITE_DIR)
 setupConfigFile()
 
 let app = express()
+
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
 
 app.use(sessionMiddleware)
 
@@ -141,6 +146,43 @@ app.put(
   },
 )
 
+app.get('/auto-cms/multi-lang/table', guardCMS, (req, res, next) => {
+ 
+  // get the current directory
+  const pathname = req.header('X-Pathname')
+
+  let file = resolveSiteFile(pathname!)
+
+  let dict = readFileSync(file + LangFileSuffix).toString()
+
+  dict = JSON.parse(dict)
+
+  res.json({ dict })
+})
+
+app.post('/auto-cms/multi-lang/save', guardCMS, (req, res, next) => {
+
+  const pathname = req.header('X-Pathname')
+
+  let file = resolveSiteFile(pathname!)
+
+  let dict = req.body
+
+  // TODO: potential bug?? the translation from zh_cn to zh_hk may failed
+  //       the workflow is different from saveLangFile()
+  //       maybe better way to handle this
+
+  for (let key in dict) {
+    let text = dict[key].zh_cn
+    translateTraditional(text).then((zh_hk: string) => {
+      dict[key].zh_hk = zh_hk
+      writeFileSync(join(file + LangFileSuffix), JSON.stringify(dict, null, 2) + '\n')
+    })
+  }
+
+});
+
+
 function saveHTMLFile(file: string, content: string) {
   if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
     saveBackup(file)
@@ -164,19 +206,24 @@ function saveLangFile(file: string, content: string) {
     let word = dict[key]
     if (!word) {
       let en = decodeHTML(key.slice(2, -2))
-      word = { en, zh: '' }
+      // one more column is added in the dictionary
+      word = { en, zh_cn: '' , zh_hk: '' }
       dict[key] = word
     }
-    if (!word.zh) {
+    if (!word.zh_cn) {
       translateText({
         text: word.en,
         source_lang: 'en',
         target_lang: 'zh',
-      }).then(zh => {
-        word.zh = zh
-        writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+      }).then(zh_cn => {
+        word.zh_cn = zh_cn
+        translateTraditional(word.zh_cn).then((zh_hk: string) => {
+          word.zh_hk = zh_hk
+          writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+        })
       })
     }
+
   }
 
   if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
@@ -253,6 +300,11 @@ app.get('/auto-cms.js', guardCMS, (req, res, next) => {
 let cms_index_file = resolve(__dirname, '..', 'public', 'auto-cms.html')
 app.get('/auto-cms', (req, res, next) => {
   res.sendFile(cms_index_file)
+})
+
+let multi_lang_file = resolve(__dirname, '..', 'public', 'multi-lang.html')
+app.get('/auto-cms/multi-lang', (req, res, next) => {
+  res.sendFile(multi_lang_file)
 })
 
 let site_dir = resolve(env.SITE_DIR)

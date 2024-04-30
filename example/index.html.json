@@ -1,0 +1,42 @@
+{
+  "{{Home Page}}": {
+    "en": "Home Page",
+    "zh_cn": "主页",
+    "zh_hk": "主頁"
+  },
+  "{{Article List}}": {
+    "en": "Article List",
+    "zh_cn": "文章列表",
+    "zh_hk": "文章列表"
+  },
+  "{{hello world}}": {
+    "en": "hello world",
+    "zh_cn": "哈罗世界",
+    "zh_hk": "哈羅世界"
+  },
+  "{{second article}}": {
+    "en": "second article",
+    "zh_cn": "第三条",
+    "zh_hk": "第三條"
+  },
+  "{{third article}}": {
+    "en": "third article",
+    "zh_cn": "第3条",
+    "zh_hk": "第3條"
+  },
+  "{{Interactive Elements}}": {
+    "en": "Interactive Elements",
+    "zh_cn": "互动要素",
+    "zh_hk": "互動要素"
+  },
+  "{{this button will be saved}}": {
+    "en": "this button will be saved",
+    "zh_cn": "此按钮将被保存",
+    "zh_hk": "此按鈕將被保存"
+  },
+  "{{this button will not be saved}}": {
+    "en": "this button will not be saved",
+    "zh_cn": "此按钮将无法保存",
+    "zh_hk": "此按鈕將無法保存"
+  }
+}

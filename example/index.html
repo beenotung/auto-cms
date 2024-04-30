@@ -18,35 +18,36 @@
     </style>
   </head>
   <body>
-    <h1>Home Page</h1>
-    <h2>Article List</h2>
+    <h1>{{Home Page}}</h1>
+    <h2>{{Article List}}</h2>
     <ol>
       <li>
         <div class="article">
           <img src="/assets/circle.svg" />
-          <a href="/article/1-hello.html">hello world</a>
+          <a href="/article/1-hello.html">{{hello world}}</a>
         </div>
       </li>
       <li>
         <div class="article">
           <img src="/assets/square.svg" />
-          <a href="/article/2-second.html">second article</a>
+          <a href="/article/2-second.html">{{second article}}</a>
         </div>
       </li>
       <li>
         <div class="article">
           <img src="/assets/triangle.svg" />
-          <a href="/article/3-third.html">third article</a>
+          <a href="/article/3-third.html">{{third article}}</a>
         </div>
       </li>
     </ol>
-    <h2>Interactive Elements</h2>
-    <div>this button will be saved</div>
+    <h2>{{Interactive Elements}}</h2>
+    <div>{{this button will be saved}}</div>
     <button onclick="this.innerText++">20</button>
-    <div>this button will not be saved</div>
+    <div>{{this button will not be saved}}</div>
     <button id="incButton" onclick="this.innerText++">1</button>
     <script>
       incButton.innerText = 1
     </script>
   </body>
 </html>
+

@@ -53,6 +53,8 @@
   },
   "dependencies": {
     "@beenotung/tslib": "^23.4.0",
+    "auto-cms-server": "^0.8.0",
+    "axios": "^1.6.8",
     "better-sqlite3": "^9.5.0",
     "better-sqlite3-proxy": "^2.6.3",
     "better-sqlite3-schema": "^3.1.4",
@@ -67,6 +69,7 @@
     "listening-on": "^2.0.9",
     "mime-detect": "^1.2.0",
     "node-easynmt": "^1.1.1",
+    "node-fetch": "^3.3.2",
     "populate-env": "^2.1.0"
   },
   "devDependencies": {

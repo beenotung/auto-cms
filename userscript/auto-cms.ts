@@ -381,6 +381,11 @@ class AutoCMSMenu extends HTMLElement {
       }
       extractText(document.body)
     })
+    this.addMenuItem(i18nSection, 'Edit Translation', event => {
+      let pathname = location.pathname
+      //console.log('test')
+      window.location.href = '/auto-cms/multi-lang?pathname=' + pathname
+    })
 
     let iframeSection = this.addSection('Iframe')
     this.addMenuItem(iframeSection, 'Expand', event => {
