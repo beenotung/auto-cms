@@ -470,6 +470,7 @@ app.get('/auto-cms.js', guardCMS, (req, res, next) => {
 
 let cms_index_file = resolve(pkg_public_dir, 'auto-cms.html')
 app.get('/auto-cms', (req, res, next) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.sendFile(cms_index_file)
 })
 
@@ -669,7 +670,7 @@ function sendHTML(
   content: Buffer | string,
   file: string,
 ) {
-  res.setHeader('Content-Type', 'text/html')
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
 
   if (req.session.auto_cms_enabled) {
     res.write(content)
