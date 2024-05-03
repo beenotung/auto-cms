@@ -1,6 +1,7 @@
 node_modules/
 dist/
 public/auto-cms.js
+public/mutli-lang.js
 *-lock.json
 *-lock.yaml
 *.lock

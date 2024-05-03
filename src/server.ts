@@ -474,6 +474,16 @@ app.get('/auto-cms', (req, res, next) => {
   res.sendFile(cms_index_file)
 })
 
+let multi_lang_file = resolve(__dirname, '..', 'public', 'multi-lang.html')
+app.get('/auto-cms/multi-lang', (req, res, next) => {
+  res.sendFile(multi_lang_file)
+})
+
+let multi_lang_js_file = resolve(__dirname, '..', 'public', 'multi-lang.js')
+app.get('/auto-cms/multi-lang.js', (req, res, next) => {
+  res.sendFile(multi_lang_js_file)
+})
+
 let site_dir = resolve(env.SITE_DIR)
 
 type MediaFile = {

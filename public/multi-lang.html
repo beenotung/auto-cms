@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Translation Editor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      #errorMessage {
+        outline: 1px solid red;
+        padding: 0.5rem;
+        width: fit-content;
+      }
+
+      #table-container {
+        overflow-x: auto;
+      }
+
+      #json-table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      #json-table th,
+      #json-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      #json-table th {
+        background-color: #f2f2f2;
+      }
+
+      code {
+        background-color: #f2f2f2;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Translation Editor</h1>
+    <p>Pathname: <code id="pathnameNode"></code></p>
+    <p id="errorMessage"></p>
+    <div id="table-container">
+      <table id="json-table"></table>
+    </div>
+    <script src="/auto-cms/multi-lang.js"></script>
+    <script>
+      async function loadTranslations() {
+        try {
+          const params = new URLSearchParams(window.location.search)
+          const pathname = params.get('pathname')
+          if (!pathname) {
+            throw 'missing pathname in location.search'
+          }
+          pathnameNode.textContent = pathname
+
+          let res = await fetch('/auto-cms/multi-lang/table', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Pathname': pathname,
+            },
+          })
+          let json = await res.json()
+          if (json.error) {
+            throw json.error
+          }
+          let { dict } = json
+
+          // the first layer of the json is the keys
+          let keys = Object.keys(dict)
+
+          const table = document.getElementById('json-table')
+
+          // Function to generate table headers
+          function generateTableHeaders() {
+            const headerNames = [
+              'English',
+              'Simplified Chinese',
+              'Traditional Chinese',
+            ]
+            const headerRow = table.insertRow()
+            headerNames.forEach(header => {
+              const th = document.createElement('th')
+              th.textContent = header
+              headerRow.appendChild(th)
+            })
+          }
+
+          // Function to generate table rows from JSON data
+          function generateTableRows() {
+            for (const key in dict) {
+              if (dict.hasOwnProperty(key)) {
+                const dataItem = dict[key]
+                const row = table.insertRow()
+
+                // English column (non-editable)
+                const enCell = row.insertCell()
+                const enValue = document.createElement('div')
+                enValue.textContent = dataItem.en
+                enCell.appendChild(enValue)
+
+                // Simplified Chinese column (editable)
+                const zh_cnCell = row.insertCell()
+                const zh_cnInput = document.createElement('input')
+                zh_cnInput.type = 'text'
+                zh_cnInput.value = dataItem.zh_cn
+                zh_cnInput.addEventListener('input', function () {
+                  // Update JSON data when input value changes
+                  dataItem.zh_cn = this.value
+                })
+                zh_cnCell.appendChild(zh_cnInput)
+
+                // Traditional Chinese column (editable)
+                const zh_hkCell = row.insertCell()
+                const zh_hkInput = document.createElement('input')
+                zh_hkInput.type = 'text'
+                zh_hkInput.value = dataItem.zh_hk
+                zh_hkInput.addEventListener('input', function () {
+                  // Update JSON data when input value changes
+                  dataItem.zh_hk = this.value
+                })
+                zh_hkCell.appendChild(zh_hkInput)
+              }
+            }
+          }
+
+          // Initialize table
+          generateTableHeaders()
+          generateTableRows()
+
+          const saveButton = document.createElement('button')
+          saveButton.textContent = 'Save'
+          saveButton.addEventListener('click', function () {
+            const jsonData = JSON.stringify(dict)
+            fetch('/auto-cms/multi-lang/save', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Pathname': pathname,
+              },
+              body: jsonData,
+            })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Dictionary saved:', data)
+              })
+              .catch(error => {
+                console.error('Error saving data:', error)
+              })
+          })
+          document.body.appendChild(saveButton)
+
+          // FIXME: The webpage may refresh before the translation is done
+          //        Hence, the translated text may not be able to show up after the refresh
+
+          saveButton.addEventListener('click', function () {
+            location.reload()
+          })
+        } catch (error) {
+          errorMessage.textContent = String(error)
+        }
+      }
+    </script>
+  </body>
+</html>

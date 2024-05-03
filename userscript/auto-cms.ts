@@ -1,3 +1,4 @@
+import { fetch_json, resolveFilePathname } from './api'
 import { wrapText } from './i18n'
 
 export let version = '0.1.16'
@@ -136,30 +137,6 @@ function getHighestZIndex() {
   }
   walk(document.body)
   return max
-}
-
-async function fetch_json<T>(url: string, init: RequestInit) {
-  return fetch(url, init)
-    .then(res => res.json().catch(err => ({ error: res.statusText })))
-    .then(json => {
-      if (json.error) {
-        throw json.error
-      }
-      return json as T
-    })
-}
-
-async function resolveFilePathname(pathname: string) {
-  let json = await fetch_json<{ pathname: string; exists: string }>(
-    '/auto-cms/file',
-    {
-      method: 'OPTIONS',
-      headers: {
-        'X-Pathname': encodeURIComponent(pathname),
-      },
-    },
-  )
-  return json
 }
 
 class AutoCMSMenu extends HTMLElement {
@@ -382,6 +359,7 @@ class AutoCMSMenu extends HTMLElement {
           let text = node.nodeValue?.trim()
           if (!text) return
 
+          if (text.includes('{[') && text.includes(']}')) return
           if (text.includes('{{') && text.includes('}}')) return
 
           let wrappedText = wrapText(node.nodeValue!)
@@ -408,6 +386,11 @@ class AutoCMSMenu extends HTMLElement {
         }
       }
       extractText(document.body)
+    })
+    this.addMenuItem(i18nSection, 'Edit Translations', event => {
+      let params = new URLSearchParams({ pathname: location.pathname })
+      let url = `/auto-cms/multi-lang?${params}`
+      window.open(url, '_blank')
     })
 
     let iframeSection = this.addSection('Iframe')
