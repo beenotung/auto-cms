@@ -28,6 +28,8 @@ import {
   setupEasyNMT,
   translateHTML,
   translateText,
+  translateIntoTraditional,
+  langDictParser,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -351,34 +353,59 @@ function saveHTMLFile(file: string, content: string) {
 function saveLangFile(file: string, content: string) {
   let dict: LangDict = loadLangFile(file) || {}
 
+  if (config.enabled_auto_backup) {
+    saveBackup(file)
+  }
+
   let matches = extractWrappedText(content)
   for (let match of matches) {
     let key = match
     let word = dict[key]
     if (!word) {
       let en = decodeHTML(key.slice(2, -2))
-      word = { en, zh: '' }
+      word = { en, zh_cn: '', zh_hk: '' }
       dict[key] = word
     }
-    if (!word.zh) {
-      translateText({
+  }
+
+  writeLangFile(file, dict)
+}
+
+function writeLangFile(file: string, dict: LangDict) {
+  let text = JSON.stringify(dict, null, 2)
+  if (text == '{}') return
+  writeFileSync(file, text + '\n')
+  autoTranslate({ file, dict })
+}
+
+async function autoTranslate(options: { file: string; dict: LangDict }) {
+  let { file, dict } = options
+  for (let [key, word] of Object.entries(dict)) {
+    function save() {
+      // load from dict in case it is updated manually in the meantime
+      dict = JSON.parse(readFileSync(file).toString())
+      dict[key] = word
+      writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+    }
+    if (!word.zh_cn) {
+      let zh = await translateText({
         text: word.en,
         source_lang: 'en',
         target_lang: 'zh',
-      }).then(zh => {
-        word.zh = zh
-        writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
+      }).catch(err => {
+        // failed to translate, need to find out why
+        return ''
       })
+      if (zh) {
+        word.zh_cn = zh
+        save()
+      }
     }
-  }
-
-  if (config.enabled_auto_backup) {
-    saveBackup(file)
-  }
-
-  let text = JSON.stringify(dict, null, 2)
-  if (text != '{}') {
-    writeFileSync(file, text + '\n')
+    if (!word.zh_hk && word.zh_cn) {
+      let zh = await translateIntoTraditional(word.zh_cn)
+      word.zh_hk = zh
+      save()
+    }
   }
 }
 

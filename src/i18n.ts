@@ -4,6 +4,7 @@ import { env } from './env'
 import { readFileSync } from 'fs'
 import { encodeHTML } from './html'
 import { Parser, array, dict, enums, literal, object, string } from 'cast.ts'
+import { TaskQueue } from '@beenotung/tslib/task/task-queue'
 
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
@@ -23,6 +24,61 @@ export async function translateText(options: {
   return out_text
 }
 
+let zhConvertResultParser = object({
+  code: literal(0),
+  data: object({
+    converter: enums([
+      'Simplified', // 簡體化
+      'Traditional', // 繁體化
+      'China', // 中國化
+      'Hongkong', // 香港化
+      'Taiwan', // 台灣化
+      'Pinyin', // 拼音化
+      'Bopomofo', // 注音化
+      'Mars', // 火星化
+      'WikiSimplified', // 維基簡體化
+      'WikiTraditional', // 維基繁體化
+    ]),
+    text: string(),
+    textFormat: literal('PlainText'),
+    usedModules: array(string()),
+  }),
+  revisions: object({ build: string(), msg: string() }),
+})
+
+// zh_cn -> zh_hk
+let zhCache = new Map<string, Promise<string>>()
+let zhTaskQueue = new TaskQueue()
+
+export async function translateIntoTraditional(zh_cn: string) {
+  if (!zh_cn.trim()) return zh_cn
+
+  // use cache to avoid unnecessary call to external service
+  let zh_hk = zhCache.get(zh_cn)
+  if (!zh_hk) {
+    // use task queue to avoid overload the external service with concurrent requests
+    zh_hk = zhTaskQueue.runTask(() => {
+      log('translate zh:', { zh_cn })
+      return fetch('https://api.zhconvert.org/convert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: zh_cn, converter: 'Traditional' }),
+      })
+        .then(res => res.json())
+        .then(json => zhConvertResultParser.parse(json).data.text)
+        .then(zh_hk => {
+          log('translate zh:', { zh_hk })
+          return zh_hk
+        })
+    })
+    zhCache.set(zh_cn, zh_hk)
+  }
+
+  return await zh_hk
+}
+
 function isUpperCase(char: string) {
   return char && char.toLocaleUpperCase() == char
 }
@@ -37,7 +93,7 @@ export let LangFileSuffix = '.json'
 // key with {{ }} -> LangText
 export type LangDict = Record<string, LangText>
 
-export type Lang = 'en' | 'zh'
+export type Lang = 'en' | 'zh_cn' | 'zh_hk'
 
 // lang -> text content
 export type LangText = Record<Lang, string>
@@ -45,7 +101,7 @@ export type LangText = Record<Lang, string>
 export let langDictParser = dict({
   key: string(),
   value: dict({
-    key: string({ sampleValues: ['en', 'zh'] }) as Parser<Lang>,
+    key: string({ sampleValues: ['en', 'zh_cn', 'zh_hk'] }) as Parser<Lang>,
     value: string(),
   }),
 })
