@@ -22,6 +22,8 @@ method text
 url text
 user_agent text NULL
 request_time integer
+lang text NULL
+is_admin boolean NULL
 
 
 contact

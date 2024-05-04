@@ -6,6 +6,8 @@ export type Request = {
   url: string
   user_agent: null | string
   request_time: number
+  lang: null | string
+  is_admin: null | boolean
 }
 
 export type Contact = {
