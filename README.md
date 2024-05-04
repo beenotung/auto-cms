@@ -48,6 +48,7 @@ Auto turn any webpage into editable CMS without coding.
 ## Enhancement
 
 - [x] support editing element with multiple text nodes with br
+- [ ] remove duplicated script, style and css link caused by repeated runtime script injection
 
 ## Usage
 
