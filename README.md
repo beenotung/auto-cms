@@ -13,13 +13,13 @@ Auto turn any webpage into editable CMS without coding.
   - image
   - audio
   - video
-- [ ] media management
+- [x] media management
   - [x] view
   - [x] upload
   - [x] delete
   - [ ] see which pages are using the media
   - [x] support image
-  - [ ] support video / audio
+  - [x] support video / audio
 - [x] Reuse html template
   - For common header, footer, e.t.c.
 - [ ] style editing
@@ -34,8 +34,8 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Save changes to file
 - [x] Custom 404 layout (send `404.html` if exists, otherwise send `index.html`)
 - [x] Multi-language support
-  - [x] convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
-  - [ ] convert traditional Chinese / simplified Chinese
+  - convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
+  - convert traditional Chinese / simplified Chinese with [繁化姬 API](https://docs.zhconvert.org)
 - [x] Contact form
 - [x] IFrame inlining
 - [ ] Auto scan 404
