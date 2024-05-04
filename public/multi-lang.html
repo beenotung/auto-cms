@@ -47,8 +47,26 @@
     <p>Pathname: <code id="pathnameNode"></code></p>
     <p id="errorMessage"></p>
     <div id="table-container">
-      <table id="json-table"></table>
+      <table id="json-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>English</th>
+            <th>Simplified Chinese</th>
+            <th>Traditional Chinese</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td><span data-text="key"></span></td>
+            <td><input type="text" data-value="en" /></td>
+            <td><input type="text" data-value="zh_cn" /></td>
+            <td><input type="text" data-value="zh_hk" /></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <template data-name="tr"> </template>
     <script src="/auto-cms/multi-lang.js"></script>
     <script>
       async function loadTranslations() {
