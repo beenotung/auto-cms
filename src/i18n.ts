@@ -9,6 +9,8 @@ import { TaskQueue } from '@beenotung/tslib/task/task-queue'
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
 
+// FIXME: investigate error when translating: New Generative Tool For 3D Scenes launch soon!
+// FIXME: handle repeated output, e.g. 'YOLOv:' -> 'YOLOV: (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV:) (YOLOV:) (YOLOV): (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOL:) (YOLOV:) (YOLOV:) (YOL:) (YOL:) (YOLOV:) (YOL:) (YOLOV:)'
 export async function translateText(options: {
   /** @description without {{ }} */
   text: string
