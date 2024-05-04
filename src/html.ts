@@ -11,4 +11,5 @@ export function encodeHTML(html: string) {
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
+    .replaceAll(' ', '&nbsp;')
 }
