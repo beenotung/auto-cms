@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Translation Editor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      #errorMessage {
+        outline: 1px solid red;
+        padding: 0.5rem;
+        width: fit-content;
+      }
+
+      thead {
+        position: sticky;
+        top: 0;
+      }
+
+      #json-table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      #json-table th,
+      #json-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      #json-table th {
+        background-color: #f2f2f2;
+      }
+      #json-table textarea {
+        width: calc(100% - 16px);
+      }
+      .key-col {
+        width: 25%;
+      }
+
+      code {
+        background-color: #f2f2f2;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+        display: inline-block;
+      }
+
+      #saveButton {
+        margin: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Translation Editor</h1>
+    <p>Pathname: <code id="pathnameNode"></code></p>
+    <p id="errorMessage">Loading Javascript...</p>
+    <div id="table-container">
+      <table id="json-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>English</th>
+            <th>Simplified Chinese</th>
+            <th>Traditional Chinese</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr hidden>
+            <td class="key-col"><code data-text="key"></code></td>
+            <td><textarea type="text" data-value="en"></textarea></td>
+            <td><textarea type="text" data-value="zh_cn"></textarea></td>
+            <td><textarea type="text" data-value="zh_hk"></textarea></td>
+          </tr>
+        </tbody>
+      </table>
+      <button id="saveButton">Save</button>
+    </div>
+    <template data-name="tr"> </template>
+    <script src="/auto-cms/multi-lang.js"></script>
+  </body>
+</html>

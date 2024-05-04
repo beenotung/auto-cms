@@ -233,7 +233,10 @@ app.put(
     }
 
     // upload text/html
-    if (req.header('Content-Type')?.includes('text/html')) {
+    if (
+      req.header('Content-Type')?.includes('text/html') ||
+      req.header('Content-Type')?.includes('application/json')
+    ) {
       let path = resolvePathname({ site_dir, pathname, mkdir: true })
       if ('error' in path) {
         res.status(500)
@@ -278,8 +281,13 @@ app.put(
     })
   },
   parse_html_middleware,
+  express.json(),
   (req, res, next) => {
     let file = (req as PutRequest).vars.file
+    if (file.endsWith('.json')) {
+      saveLangDict({ file, json: req.body })
+      res.json({ message: 'saved to target file' })
+    }
     let content = req.body.trim() as string
     if (!content) {
       res.status(400)
@@ -366,6 +374,18 @@ function saveLangFile(file: string, content: string) {
       word = { en, zh_cn: '', zh_hk: '' }
       dict[key] = word
     }
+  }
+
+  writeLangFile(file, dict)
+}
+
+function saveLangDict(options: { file: string; json: unknown }) {
+  let { file, json } = options
+
+  let dict: LangDict = langDictParser.parse(json)
+
+  if (config.enabled_auto_backup) {
+    saveBackup(file)
   }
 
   writeLangFile(file, dict)
@@ -494,6 +514,16 @@ let cms_index_file = resolve(pkg_public_dir, 'auto-cms.html')
 app.get('/auto-cms', (req, res, next) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.sendFile(cms_index_file)
+})
+
+let multi_lang_file = resolve(__dirname, '..', 'public', 'multi-lang.html')
+app.get('/auto-cms/multi-lang', (req, res, next) => {
+  res.sendFile(multi_lang_file)
+})
+
+let multi_lang_js_file = resolve(__dirname, '..', 'public', 'multi-lang.js')
+app.get('/auto-cms/multi-lang.js', (req, res, next) => {
+  res.sendFile(multi_lang_js_file)
 })
 
 let site_dir = resolve(env.SITE_DIR)
