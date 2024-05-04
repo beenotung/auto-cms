@@ -27,8 +27,15 @@ export function wrapText(text: string): false | string {
       break
     }
   }
-  let before = chars.slice(0, start_index).join('')
   let mid = chars.slice(start_index, end_index).join('')
+  if (
+    !mid
+      .split('')
+      .some(char => !allowedSymbols.includes(char) && !isSymbol(char))
+  ) {
+    return false
+  }
+  let before = chars.slice(0, start_index).join('')
   let after = chars.slice(end_index).join('')
   return before + '{{' + mid + '}}' + after
 }
