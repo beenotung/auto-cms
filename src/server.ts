@@ -340,7 +340,7 @@ app.put('/auto-cms/file/copy', guardCMS, (req, res, next) => {
 })
 
 function saveHTMLFile(file: string, content: string) {
-  if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
+  if (config.enabled_auto_backup) {
     saveBackup(file)
   }
   writeFileSync(file, content)
@@ -377,7 +377,7 @@ function saveLangFile(file: string, content: string) {
     }
   }
 
-  if (env.AUTO_CMS_AUTO_BACKUP == 'true') {
+  if (config.enabled_auto_backup) {
     saveBackup(file)
   }
 
