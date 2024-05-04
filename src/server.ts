@@ -37,6 +37,7 @@ import { pkg } from './pkg'
 import { storeContact, storeRequest } from './store'
 import { applyTemplates } from './template'
 import { resolvePathname } from './file'
+import { cookieMiddleware } from './cookie'
 
 setupKnex()
 
@@ -52,6 +53,7 @@ setupConfigFile()
 let app = express()
 
 app.use(sessionMiddleware)
+app.use(cookieMiddleware)
 
 if (config.enabled_auto_login) {
   app.use(autoLoginCMS)
@@ -716,6 +718,7 @@ function isBufferStartsWith(content: Buffer, prefix: string): boolean {
   return content.subarray(0, prefix.length).toString().toLowerCase() == prefix
 }
 
+// required to apply `sessionMiddleware` and `cookieMiddleware` before calling this function
 function sendHTML(
   req: Request,
   res: Response,
@@ -740,7 +743,7 @@ function sendHTML(
 
   if (config.enabled_multi_lang) {
     // TODO load lang from cookie
-    let lang = env.AUTO_CMS_DEFAULT_LANG
+    let lang = req.cookies.LANG || env.AUTO_CMS_DEFAULT_LANG
     content = translateHTML({
       html: content.toString(),
       file: file + LangFileSuffix,
