@@ -395,7 +395,9 @@ class AutoCMSMenu extends HTMLElement {
         // exclude script, style, noscript, and auto-cms elements
         if (
           node instanceof HTMLScriptElement ||
+          node instanceof SVGScriptElement ||
           node instanceof HTMLStyleElement ||
+          node instanceof SVGStyleElement ||
           node.nodeName.toLocaleLowerCase() == 'noscript' ||
           node instanceof AutoCMSStatus
         ) {
