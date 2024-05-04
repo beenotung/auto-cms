@@ -1,2 +1,39 @@
 <hr />
-<footer>Demo Site</footer>
+<style>
+  footer {
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+<footer>
+  <span>Demo Site</span>
+  <form id="langForm">
+    Language:
+    <label>
+      <input type="radio" name="lang" value="en" />
+      English
+    </label>
+    <label>
+      <input type="radio" name="lang" value="zh_cn" />
+      簡體中文
+    </label>
+    <label>
+      <input type="radio" name="lang" value="zh_hk" />
+      繁體中文
+    </label>
+  </form>
+  <script>
+    {
+      let lang = new URLSearchParams(document.cookie).get('LANG')
+      langForm.lang.value = lang
+      langForm.lang.forEach(input => {
+        input.addEventListener('change', event => {
+          if (input.checked) {
+            document.cookie = 'LANG=' + input.value
+            location.reload()
+          }
+        })
+      })
+    }
+  </script>
+</footer>

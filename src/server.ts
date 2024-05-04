@@ -742,8 +742,11 @@ function sendHTML(
   }
 
   if (config.enabled_multi_lang) {
-    // TODO load lang from cookie
-    let lang = req.cookies.LANG || env.AUTO_CMS_DEFAULT_LANG
+    let lang = req.cookies.LANG
+    if (!lang) {
+      lang = env.AUTO_CMS_DEFAULT_LANG
+      res.cookie('LANG', lang)
+    }
     content = translateHTML({
       html: content.toString(),
       file: file + LangFileSuffix,
