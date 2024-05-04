@@ -1,6 +1,5 @@
 import { Request } from 'express'
 import { DBProxy, createProxy } from './proxy'
-import { object, optional, string } from 'cast.ts'
 import { db } from './db'
 
 let _proxy: DBProxy | undefined
