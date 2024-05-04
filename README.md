@@ -66,6 +66,14 @@ npx -y auto-cms-server
 
 ## API
 
+### Multi Language
+
+The `LANG` cookie is used to specified the client-preferred language. Possible values are: `en`, `zh_cn`, and `zh_hk`.
+
+The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
+
+Example UI and code to set the language see the `langForm` in [example/footer.html](./example/footer.html)
+
 ### Submit Contact Form
 
 ```
