@@ -36,7 +36,6 @@ import { setupKnex } from './knex'
 import { pkg } from './pkg'
 import { storeContact, storeRequest } from './store'
 import { applyTemplates } from './template'
-import { exist } from '@beenotung/tslib'
 import { resolvePathname } from './file'
 
 setupKnex()
