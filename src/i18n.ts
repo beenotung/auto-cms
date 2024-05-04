@@ -3,6 +3,7 @@ import debug from 'debug'
 import { env } from './env'
 import { readFileSync } from 'fs'
 import { encodeHTML } from './html'
+import { Parser, array, dict, enums, literal, object, string } from 'cast.ts'
 
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
@@ -41,10 +42,19 @@ export type Lang = 'en' | 'zh'
 // lang -> text content
 export type LangText = Record<Lang, string>
 
-export function loadLangFile(file: string) {
+export let langDictParser = dict({
+  key: string(),
+  value: dict({
+    key: string({ sampleValues: ['en', 'zh'] }) as Parser<Lang>,
+    value: string(),
+  }),
+})
+
+export function loadLangFile(file: string): LangDict | null {
   try {
     let text = readFileSync(file).toString()
-    return JSON.parse(text) as LangDict
+    let json = JSON.parse(text)
+    return langDictParser.parse(json)
   } catch (error) {
     // file not found
     return null

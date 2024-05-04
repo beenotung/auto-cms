@@ -24,6 +24,7 @@ import {
   LangDict,
   LangFileSuffix,
   extractWrappedText,
+  loadLangFile,
   setupEasyNMT,
   translateHTML,
   translateText,
@@ -348,13 +349,7 @@ function saveHTMLFile(file: string, content: string) {
 }
 
 function saveLangFile(file: string, content: string) {
-  let dict = {} as LangDict
-  try {
-    let text = readFileSync(file).toString()
-    dict = JSON.parse(text)
-  } catch (error) {
-    // file not found
-  }
+  let dict: LangDict = loadLangFile(file) || {}
 
   let matches = extractWrappedText(content)
   for (let match of matches) {
