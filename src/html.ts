@@ -3,6 +3,7 @@ export function decodeHTML(html: string) {
     .replaceAll('&lt;', '<')
     .replaceAll('&gt;', '>')
     .replaceAll('&amp;', '&')
+    .replaceAll('&nbsp;', ' ')
 }
 
 export function encodeHTML(html: string) {
