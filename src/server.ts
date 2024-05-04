@@ -694,7 +694,8 @@ app.use((req, res, next) => {
   res.status(404)
   let file = get404File()
   if (file) {
-    res.sendFile(file)
+    let content = readFileSync(file)
+    sendHTML(req, res, content, file)
   } else {
     next()
   }
