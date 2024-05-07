@@ -506,13 +506,80 @@ class AutoCMSMenu extends HTMLElement {
           n++
         }
       }
-      check('script', (node: HTMLScriptElement) => node.src || node.textContent)
-      check('style', (node: HTMLStyleElement) => node.textContent)
-      check(
-        'link[rel="stylesheet"][href]',
-        (node: HTMLLinkElement) => node.href,
+      check<HTMLScriptElement>('script', node => node.src || node.textContent)
+      check<HTMLStyleElement>('style', node => node.textContent)
+      check<HTMLLinkElement>('link[rel="stylesheet"][href]', node => node.href)
+      check<HTMLLinkElement>(
+        'link[rel="stylesheet"]:not([href])[id]',
+        node => node.id,
       )
+      check<HTMLLinkElement>('link[rel="preconnect"][href]', node => node.href)
+      check<HTMLLinkElement>(
+        'link[rel="dns-prefetch"][href]',
+        node => node.href,
+      )
+      check<HTMLMetaElement>(
+        'meta[http-equiv="origin-trial"]',
+        node => node.content,
+      )
+      let selectors = [
+        '.wistia_injected_style',
+        'iframe[owner="archetype"][title="archetype"]',
+      ]
+      for (let selector of selectors) {
+        for (let node of document.querySelectorAll(selector)) {
+          node.remove()
+          n++
+        }
+      }
       button.textContent = `Deduplicated ${n} scripts`
+    })
+    this.addMenuItem(miscSection, 'Deduplicate Class', async event => {
+      let button = event.target as HTMLButtonElement
+      let n = 0
+      let nodes = document.querySelectorAll('[class]')
+      for (let node of nodes) {
+        let className = Array.from(node.classList).join(' ')
+        if (node.getAttribute('class') != className) {
+          // set "class" attribute instead of "className" property because that is readonly in SVGElement
+          node.setAttribute('class', className)
+          n++
+        }
+      }
+      button.textContent = `Cleanup ${n} elements`
+    })
+    this.addMenuItem(miscSection, 'Remove Tracking Scripts', async event => {
+      let button = event.target as HTMLButtonElement
+      let n = 0
+      let selectors = [
+        'script[src*="://www.googleadservices.com/pagead/conversion/"]',
+        'script[src*="://googleads.g.doubleclick.net/"]',
+        'script[src*="://static.doubleclick.net/"]',
+        'iframe[src*="://td.doubleclick.net/"]',
+        'script[src*="://www.googletagmanager.com/gtag/js"]',
+        'script[src*="://connect.facebook.net/signals/config/"]',
+        'script[src*="://connect.facebook.net/en_US/fbevents.js"]',
+      ]
+      for (let selector of selectors) {
+        let nodes = document.querySelectorAll(selector)
+        for (let node of nodes) {
+          node.remove()
+          n++
+        }
+      }
+      button.textContent = `Removed ${n} scripts`
+    })
+    this.addMenuItem(miscSection, 'Rearrange head & body', async event => {
+      let button = event.target as HTMLButtonElement
+      let n = 0
+      let selectors = ['body title', 'body meta', 'body link']
+      for (let selector of selectors) {
+        for (let node of document.querySelectorAll(selector)) {
+          document.head.appendChild(node)
+          n++
+        }
+      }
+      button.textContent = `Rearranged ${n} elements`
     })
 
     let cmsSection = this.addSection('CMS')
