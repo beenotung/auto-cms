@@ -483,6 +483,38 @@ class AutoCMSMenu extends HTMLElement {
       og_meta.setAttribute('content', ans)
     })
 
+    let miscSection = this.addSection('Misc')
+    this.addMenuItem(miscSection, 'Deduplicate Scripts', async event => {
+      let button = event.target as HTMLButtonElement
+      let n = 0
+      let set = new Set<string>()
+      function check<T extends HTMLElement>(
+        selector: string,
+        extractFn: (node: T) => string | null,
+      ) {
+        let nodes = document.querySelectorAll<T>(selector)
+        for (let node of nodes) {
+          let str = extractFn(node)
+          if (!str) {
+            continue
+          }
+          if (!set.has(str)) {
+            set.add(str)
+            continue
+          }
+          node.remove()
+          n++
+        }
+      }
+      check('script', (node: HTMLScriptElement) => node.src || node.textContent)
+      check('style', (node: HTMLStyleElement) => node.textContent)
+      check(
+        'link[rel="stylesheet"][href]',
+        (node: HTMLLinkElement) => node.href,
+      )
+      button.textContent = `Deduplicated ${n} scripts`
+    })
+
     let cmsSection = this.addSection('CMS')
     this.addMenuItem(cmsSection, 'Save', async event => {
       let button = event.target as HTMLButtonElement
