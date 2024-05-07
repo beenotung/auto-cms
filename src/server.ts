@@ -414,7 +414,7 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
         source_lang: 'en',
         target_lang: 'zh',
       }).catch(err => {
-        // failed to translate, need to find out why
+        // FIXME: failed to translate, need to find out why
         return ''
       })
       if (zh) {
@@ -423,8 +423,13 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       }
     }
     if (!word.zh_hk && word.zh_cn) {
-      let zh = await translateIntoTraditional(word.zh_cn)
-      word.zh_hk = zh
+      let zh = await translateIntoTraditional(word.zh_cn).catch(err => {
+        // FIXME: failed to translate, need to find out why
+        return ''
+      })
+      if (zh) {
+        word.zh_hk = zh
+      }
       save()
     }
   }
