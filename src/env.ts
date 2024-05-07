@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import { config as loadEnv } from 'dotenv'
 import { existsSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 import populateEnv from 'populate-env'
 
 loadEnv()
@@ -8,7 +9,7 @@ loadEnv()
 export let env = {
   NODE_ENV: 'development',
   PORT: 8100,
-  SITE_DIR: '.',
+  SITE_DIR: '',
   AUTO_CMS_AUTO_LOGIN: 'false',
   AUTO_CMS_AUTO_BACKUP: 'true',
   AUTO_CMS_PASSWORD: '',
@@ -42,6 +43,13 @@ try {
     text += `${key}=${value}\n`
   }
   writeFileSync(file, text)
+}
+
+if (resolve(env.SITE_DIR) == resolve(process.cwd())) {
+  console.error(
+    'SITE_DIR is same as current directory, this setup may expose private files. Please put your public files in a folder and update the SITE_DIR accordingly.',
+  )
+  process.exit(1)
 }
 
 export function isEnabled(key: keyof typeof env) {
