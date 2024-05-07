@@ -517,12 +517,12 @@ app.get('/auto-cms', (req, res, next) => {
   res.sendFile(cms_index_file)
 })
 
-let multi_lang_file = resolve(__dirname, '..', 'public', 'multi-lang.html')
+let multi_lang_file = resolve(pkg_public_dir, 'multi-lang.html')
 app.get('/auto-cms/multi-lang', (req, res, next) => {
   res.sendFile(multi_lang_file)
 })
 
-let multi_lang_js_file = resolve(__dirname, '..', 'public', 'multi-lang.js')
+let multi_lang_js_file = resolve(pkg_public_dir, 'multi-lang.js')
 app.get('/auto-cms/multi-lang.js', (req, res, next) => {
   res.sendFile(multi_lang_js_file)
 })
