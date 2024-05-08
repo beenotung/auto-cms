@@ -1,5 +1,6 @@
 import { fetch_json, resolveFilePathname } from './api'
 import { wrapText } from './i18n'
+import { extractPadding } from './string'
 
 export let version = '0.1.16'
 
@@ -380,16 +381,25 @@ class AutoCMSMenu extends HTMLElement {
 
     let i18nSection = this.addSection('i18n')
     this.addMenuItem(i18nSection, 'Extract Text', event => {
+      let span = document.createElement('span')
+      document.body.appendChild(span)
       let extractText = (node: Node) => {
         // wrap text node with {{ }}
         if (node.nodeType === Node.TEXT_NODE) {
-          let text = node.nodeValue?.trim()
-          if (!text) return
+          let fullText = node.nodeValue
+          if (!fullText) return
 
-          if (text.includes('{[') && text.includes(']}')) return
-          if (text.includes('{{') && text.includes('}}')) return
+          span.textContent = fullText
+          let trimmedText = span.innerText.trim()
+          if (!trimmedText.trim()) return
 
-          let wrappedText = wrapText(node.nodeValue!)
+          if (trimmedText.includes('{[') && trimmedText.includes(']}')) return
+          if (trimmedText.includes('{{') && trimmedText.includes('}}')) return
+
+          let padding = extractPadding(fullText, trimmedText)
+          let text = padding.leading + trimmedText + padding.tailing
+
+          let wrappedText = wrapText(text)
           if (wrappedText) {
             node.nodeValue = wrappedText
           }
@@ -415,6 +425,7 @@ class AutoCMSMenu extends HTMLElement {
         }
       }
       extractText(document.body)
+      span.remove()
     })
     this.addMenuItem(i18nSection, 'Edit Translations', event => {
       let params = new URLSearchParams({ pathname: location.pathname })
