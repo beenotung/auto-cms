@@ -351,6 +351,33 @@ class AutoCMSMenu extends HTMLElement {
       addTarget(target, 1)
     })
 
+    let hideSection = this.addSection('Hide')
+    this.addMenuItem(hideSection, 'Advanced Mode', event => {
+      alert(
+        'right click > inspect > left-click element > edit style > set "display: none"',
+      )
+    })
+    this.addMenuItem(hideSection, 'Easy Mode', event => {
+      let addTarget = (target: HTMLElement, index: number) => {
+        if (target == document.body) return
+        let targetText = `${index}: ${toTagText(target)}`
+        let { button } = this.addMenuItem(hideSection, targetText, event => {
+          if (!target.hidden) {
+            target.hidden = true
+            button.textContent = 'Undo'
+          } else {
+            target.hidden = false
+            button.textContent = targetText
+          }
+        })
+        button.style.textAlign = 'start'
+        if (target.parentElement) {
+          addTarget(target.parentElement, index + 1)
+        }
+      }
+      addTarget(target, 1)
+    })
+
     let i18nSection = this.addSection('i18n')
     this.addMenuItem(i18nSection, 'Extract Text', event => {
       let extractText = (node: Node) => {
