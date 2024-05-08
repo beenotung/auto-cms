@@ -86,7 +86,7 @@ function isUpperCase(char: string) {
 }
 
 export function extractWrappedText(html: string): string[] {
-  let matches = html.match(/{{(.*?)}}/g)
+  let matches = html.match(/{{(.*?)}}/gms)
   return matches || []
 }
 
