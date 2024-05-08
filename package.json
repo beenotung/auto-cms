@@ -38,7 +38,7 @@
     "start": "run-p server dev",
     "server": "ts-node-dev src/server.ts",
     "test": "tsc --noEmit",
-    "mocha": "ts-mocha \"src/*.spec.ts\"",
+    "mocha": "ts-mocha \"{src,userscript}/*.spec.ts\"",
     "prepublishOnly": "npm run build",
     "build": "run-s clean tsc bundle",
     "clean": "rimraf dist",

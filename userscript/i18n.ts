@@ -35,7 +35,18 @@ export function wrapText(text: string): false | string {
   ) {
     return false
   }
+
+  // expand to wrap surrounding numbers and symbols
+  // e.g. expand " $2{{M}}+ " -> " {{$2M+}} "
+  while (start_index - 1 >= 0 && chars[start_index - 1].trim()) {
+    start_index--
+  }
+  while (end_index < chars.length && chars[end_index].trim()) {
+    end_index++
+  }
+
   let before = chars.slice(0, start_index).join('')
+  mid = chars.slice(start_index, end_index).join('')
   let after = chars.slice(end_index).join('')
   return before + '{{' + mid + '}}' + after
 }
