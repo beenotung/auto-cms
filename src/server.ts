@@ -417,6 +417,7 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
         target_lang: 'zh',
       }).catch(err => {
         // FIXME: failed to translate, need to find out why
+        console.error('failed to translate into zh:', err)
         return ''
       })
       if (zh) {
@@ -427,6 +428,7 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
     if (!word.zh_hk && word.zh_cn) {
       let zh = await translateIntoTraditional(word.zh_cn).catch(err => {
         // FIXME: failed to translate, need to find out why
+        console.error('failed to translate into traditional:', err)
         return ''
       })
       if (zh) {
