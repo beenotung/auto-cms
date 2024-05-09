@@ -135,7 +135,7 @@ export function translateHTML(options: {
     if (!word) continue
     let text = word[lang]
     if (!text) continue
-    html = html.replaceAll(key, encodeHTML(text))
+    html = html.replaceAll(key, encodeHTML(text).replaceAll('&nbsp;', ' '))
   }
 
   return html
