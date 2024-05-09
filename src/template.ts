@@ -1,12 +1,14 @@
 import { readFileSync } from 'fs'
 import { dirname, join, resolve } from 'path'
+import { Lang, LangFileSuffix, translateHTML } from './i18n'
 
 export function applyTemplates(options: {
   site_dir: string
   html: string
   file: string
+  lang: Lang | null
 }): string {
-  let { site_dir, html } = options
+  let { site_dir, html, lang } = options
   let dir = dirname(options.file)
 
   for (;;) {
@@ -27,6 +29,13 @@ export function applyTemplates(options: {
       }
 
       let template = readFileSync(file).toString()
+      if (lang) {
+        template = translateHTML({
+          html: template,
+          file: file + LangFileSuffix,
+          lang: lang,
+        })
+      }
       html = html.replace(key, template)
 
       found = true

@@ -30,6 +30,7 @@ import {
   translateText,
   translateIntoTraditional,
   langDictParser,
+  Lang,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -739,24 +740,29 @@ function sendHTML(
     return
   }
 
+  let lang: Lang | null = null
+  if (config.enabled_multi_lang) {
+    lang = req.cookies.LANG
+    if (!lang) {
+      lang = env.AUTO_CMS_DEFAULT_LANG
+      res.cookie('LANG', lang)
+    }
+  }
+
   if (config.enabled_template) {
     content = applyTemplates({
       site_dir,
       html: content.toString(),
       file,
+      lang,
     })
   }
 
-  if (config.enabled_multi_lang) {
-    let lang = req.cookies.LANG
-    if (!lang) {
-      lang = env.AUTO_CMS_DEFAULT_LANG
-      res.cookie('LANG', lang)
-    }
+  if (lang) {
     content = translateHTML({
       html: content.toString(),
       file: file + LangFileSuffix,
-      lang: lang,
+      lang,
     })
   }
 
