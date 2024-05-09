@@ -288,6 +288,7 @@ app.put(
     if (file.endsWith('.json')) {
       saveLangDict({ file, json: req.body })
       res.json({ message: 'saved to target file' })
+      return
     }
     let content = req.body.trim() as string
     if (!content) {
