@@ -27,6 +27,9 @@ describe('wrapText()', () => {
   it('should include numbers and symbols if the phrase as english char', () => {
     test('$2M+', '{{$2M+}}')
   })
+  it('should include tailing number', () => {
+    test('YOLOv9', '{{YOLOv9}}')
+  })
   it('should not include leading/tailing spaces', () => {
     test(' apple ', ' {{apple}} ')
     test(' $2M+ ', ' {{$2M+}} ')
