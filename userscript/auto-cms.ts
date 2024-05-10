@@ -466,18 +466,9 @@ class AutoCMSMenu extends HTMLElement {
 
     let metaSection = this.addSection('Meta for SEO')
     this.addMenuItem(metaSection, 'Favicon', async event => {
-      let nodes = [
-        ...Array.from(
-          document.querySelectorAll(
-            'link[rel="shortcut icon"][type="image/x-icon"]',
-          ),
-        ),
-        ...Array.from(
-          document.querySelectorAll(
-            'link[rel="icon shortcut"][type="image/x-icon"]',
-          ),
-        ),
-      ]
+      let nodes = Array.from(
+        document.querySelectorAll('link[rel="icon"][type="image/x-icon"]'),
+      )
       if (nodes.length == 0) {
         let link = document.createElement('link')
         link.setAttribute('rel', 'shortcut icon')
