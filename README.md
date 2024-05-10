@@ -78,7 +78,39 @@ The `LANG` cookie is used to specified the client-preferred language. Possible v
 
 The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
 
-Example UI and code to set the language see the `langForm` in [example/footer.html](./example/footer.html)
+Below is example UI and code to show and set the language:
+
+```html
+<form id="langForm">
+  Language:
+  <label>
+    <input type="radio" name="lang" value="en" />
+    English
+  </label>
+  <label>
+    <input type="radio" name="lang" value="zh_cn" />
+    簡體中文
+  </label>
+  <label>
+    <input type="radio" name="lang" value="zh_hk" />
+    繁體中文
+  </label>
+</form>
+<script>
+  {
+    let lang = new URLSearchParams(document.cookie).get('LANG')
+    langForm.lang.value = lang
+    langForm.lang.forEach(input => {
+      input.addEventListener('change', event => {
+        if (input.checked) {
+          document.cookie = 'LANG=' + input.value
+          location.reload()
+        }
+      })
+    })
+  }
+</script>
+```
 
 ### Submit Contact Form
 
