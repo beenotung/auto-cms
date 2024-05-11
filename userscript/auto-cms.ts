@@ -465,34 +465,6 @@ class AutoCMSMenu extends HTMLElement {
     })
 
     let metaSection = this.addSection('Meta for SEO')
-    this.addMenuItem(metaSection, 'Favicon', async event => {
-      let nodes = Array.from(
-        document.querySelectorAll('link[rel*="icon"][type="image/x-icon"]'),
-      )
-      if (nodes.length == 0) {
-        let link = document.createElement('link')
-        link.setAttribute('rel', 'shortcut icon')
-        link.setAttribute('type', 'image/x-icon')
-        link.setAttribute('href', '/favicon.ico')
-        nodes.push(link)
-        document.head.appendChild(link)
-      }
-      let link = nodes[0]
-      let href = link.getAttribute('href') || undefined
-      if (href && href[0] != '/') {
-        href = '/' + href
-      }
-      let ans = prompt('favicon', href)
-      if (ans == null) return
-      if (ans == '') {
-        link.remove()
-      } else {
-        link.setAttribute('href', ans)
-      }
-      for (let i = 1; i < nodes.length; i++) {
-        nodes[i].remove()
-      }
-    })
     this.addMenuItem(metaSection, 'Page Title', event => {
       let og_meta = document.querySelector('meta[property="og:title"]')
       let twitter_meta = document.querySelector('meta[name="twitter:title"]')
@@ -550,6 +522,34 @@ class AutoCMSMenu extends HTMLElement {
     })
 
     let miscSection = this.addSection('Misc')
+    this.addMenuItem(miscSection, 'Favicon', async event => {
+      let nodes = Array.from(
+        document.querySelectorAll('link[rel*="icon"][type="image/x-icon"]'),
+      )
+      if (nodes.length == 0) {
+        let link = document.createElement('link')
+        link.setAttribute('rel', 'shortcut icon')
+        link.setAttribute('type', 'image/x-icon')
+        link.setAttribute('href', '/favicon.ico')
+        nodes.push(link)
+        document.head.appendChild(link)
+      }
+      let link = nodes[0]
+      let href = link.getAttribute('href') || undefined
+      if (href && href[0] != '/') {
+        href = '/' + href
+      }
+      let ans = prompt('favicon', href)
+      if (ans == null) return
+      if (ans == '') {
+        link.remove()
+      } else {
+        link.setAttribute('href', ans)
+      }
+      for (let i = 1; i < nodes.length; i++) {
+        nodes[i].remove()
+      }
+    })
     this.addMenuItem(miscSection, 'Deduplicate Scripts', async event => {
       let button = event.target as HTMLButtonElement
       let n = 0
