@@ -148,6 +148,9 @@ export async function setupEasyNMT() {
     })
   } catch (error) {
     // i18n module is optional, fine to continue without halt
-    console.error(error)
+    console.error(
+      'Warning: Failed to start EasyNMT docker container for multi language translation.',
+      String(error),
+    )
   }
 }
