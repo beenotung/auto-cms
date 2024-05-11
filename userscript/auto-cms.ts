@@ -524,12 +524,13 @@ class AutoCMSMenu extends HTMLElement {
     let miscSection = this.addSection('Misc')
     this.addMenuItem(miscSection, 'Favicon', async event => {
       let nodes = Array.from(
-        document.querySelectorAll('link[rel*="icon"][type="image/x-icon"]'),
+        document.querySelectorAll(
+          'link[rel="icon"],link[rel="shortcut icon"],link[rel="mask-icon"]',
+        ),
       )
       if (nodes.length == 0) {
         let link = document.createElement('link')
-        link.setAttribute('rel', 'shortcut icon')
-        link.setAttribute('type', 'image/x-icon')
+        link.setAttribute('rel', 'icon')
         link.setAttribute('href', '/favicon.ico')
         nodes.push(link)
         document.head.appendChild(link)
