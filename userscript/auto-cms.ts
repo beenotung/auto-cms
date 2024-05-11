@@ -539,7 +539,33 @@ class AutoCMSMenu extends HTMLElement {
       if (href && href[0] != '/') {
         href = '/' + href
       }
-      let ans = prompt('favicon', href)
+      let ans = prompt('Image for favicon (recommended 32x32px):', href)
+      if (ans == null) return
+      if (ans == '') {
+        link.remove()
+      } else {
+        link.setAttribute('href', ans)
+      }
+      for (let i = 1; i < nodes.length; i++) {
+        nodes[i].remove()
+      }
+    })
+    this.addMenuItem(miscSection, 'PWA Icon', async event => {
+      let nodes = Array.from(
+        document.querySelectorAll('link[rel="apple-touch-icon"]'),
+      )
+      if (nodes.length == 0) {
+        let link = document.createElement('link')
+        link.setAttribute('rel', 'apple-touch-icon')
+        nodes.push(link)
+        document.head.appendChild(link)
+      }
+      let link = nodes[0]
+      let href = link.getAttribute('href') || undefined
+      if (href && href[0] != '/') {
+        href = '/' + href
+      }
+      let ans = prompt('Image for PWA icon (recommended 180x180px):', href)
       if (ans == null) return
       if (ans == '') {
         link.remove()
