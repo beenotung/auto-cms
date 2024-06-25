@@ -68,6 +68,13 @@ export async function translateIntoTraditional(zh_cn: string) {
         },
         body: JSON.stringify({ text: zh_cn, converter: 'Traditional' }),
       })
+        .catch(error => {
+          // allow retry if timeout
+          if (error?.code == 'ETIMEDOUT') {
+            zhCache.delete(zh_cn)
+          }
+          throw error
+        })
         .then(res => res.json())
         .then(json => zhConvertResultParser.parse(json).data.text)
         .then(zh_hk => {
