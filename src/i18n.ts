@@ -5,23 +5,74 @@ import { readFileSync } from 'fs'
 import { encodeHTML } from './html'
 import { Parser, array, dict, enums, literal, object, string } from 'cast.ts'
 import { TaskQueue } from '@beenotung/tslib/task/task-queue'
+import { TranslateLanguageData } from 'open-google-translator'
+import { memorize } from '@beenotung/tslib/memorize'
 
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
 
+let googleTranslateQueue = new TaskQueue()
+
+export let en_to_zh = memorize(async (en: string): Promise<string> => {
+  if (!en.trim()) return en
+
+  log('en_to_zh:', { en })
+
+  let zh: string
+  try {
+    let data = await googleTranslateQueue.runTask(() =>
+      TranslateLanguageData({
+        listOfWordsToTranslate: [en],
+        fromLanguage: 'en',
+        toLanguage: 'zh-cn',
+      }),
+    )
+    zh = data[0].translation
+    if (!zh) throw 'empty translate result'
+  } catch (error) {
+    zh = await translateIntoSimplified(en)
+  }
+
+  log('en_to_zh:', { zh })
+
+  return zh
+})
+
+export let to_hk = memorize(async (en: string, zh: string): Promise<string> => {
+  if (!en.trim()) return en
+  if (!zh.trim()) return zh
+
+  let hk: string
+  try {
+    log('to_hk:', { en })
+    let data = await googleTranslateQueue.runTask(() =>
+      TranslateLanguageData({
+        listOfWordsToTranslate: [en],
+        fromLanguage: 'en',
+        toLanguage: 'zh-tw',
+      }),
+    )
+    hk = data[0].translation
+  } catch (error) {
+    log('to_hk:', { zh })
+    hk = await translateIntoTraditional(zh)
+  }
+
+  log('to_hk:', { hk })
+
+  return hk
+})
+
 // FIXME: investigate error when translating: New Generative Tool For 3D Scenes launch soon!
 // FIXME: handle repeated output, e.g. 'YOLOv:' -> 'YOLOV: (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV): (YOLOV:) (YOLOV:) (YOLOV): (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOLOV:) (YOL:) (YOLOV:) (YOLOV:) (YOL:) (YOL:) (YOLOV:) (YOL:) (YOLOV:)'
-export async function translateText(options: {
-  /** @description without {{ }} */
-  text: string
-  /** @example 'zh' */
-  target_lang: string
-  /** @description auto detect if not specified */
-  source_lang?: string
-}) {
-  let in_text = options.text
-  log('translate:', { in_text })
-  let out_text = await patchedTranslate(options)
+async function translateIntoSimplified(en: string) {
+  log('translate:', { en })
+  let out_text = await patchedTranslate({
+    text: en,
+    target_lang: 'zh',
+    source_lang: 'en',
+    cached: false,
+  })
   log('translate:', { out_text })
   return out_text
 }
@@ -49,47 +100,28 @@ let zhConvertResultParser = object({
 })
 
 // zh_cn -> zh_hk
-let zhCache = new Map<string, Promise<string>>()
 let zhTaskQueue = new TaskQueue()
 
-export async function translateIntoTraditional(zh_cn: string) {
+async function translateIntoTraditional(zh_cn: string): Promise<string> {
   if (!zh_cn.trim()) return zh_cn
 
-  // use cache to avoid unnecessary call to external service
-  let zh_hk = zhCache.get(zh_cn)
-  if (!zh_hk) {
-    // use task queue to avoid overload the external service with concurrent requests
-    zh_hk = zhTaskQueue.runTask(() => {
-      log('translate zh:', { zh_cn })
-      return fetch('https://api.zhconvert.org/convert', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: zh_cn, converter: 'Traditional' }),
-      })
-        .catch(error => {
-          // allow retry if timeout
-          if (error?.code == 'ETIMEDOUT') {
-            zhCache.delete(zh_cn)
-          }
-          throw error
-        })
-        .then(res => res.json())
-        .then(json => zhConvertResultParser.parse(json).data.text)
-        .then(zh_hk => {
-          log('translate zh:', { zh_hk })
-          return zh_hk
-        })
+  // use task queue to avoid overload the external service with concurrent requests
+  return zhTaskQueue.runTask(() => {
+    log('translate zh:', { zh_cn })
+    return fetch('https://api.zhconvert.org/convert', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: zh_cn, converter: 'Traditional' }),
     })
-    zhCache.set(zh_cn, zh_hk)
-  }
-
-  return await zh_hk
-}
-
-function isUpperCase(char: string) {
-  return char && char.toLocaleUpperCase() == char
+      .then(res => res.json())
+      .then(json => zhConvertResultParser.parse(json).data.text)
+      .then(zh_hk => {
+        log('translate zh:', { zh_hk })
+        return zh_hk
+      })
+  })
 }
 
 export function extractWrappedText(html: string): string[] {

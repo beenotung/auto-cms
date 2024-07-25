@@ -36,6 +36,7 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Multi-language support
   - convert 150+ languages with [node-EasyNMT](https://github.com/beenotung/node-EasyNMT)
   - convert traditional Chinese / simplified Chinese with [繁化姬 API](https://docs.zhconvert.org)
+  - convert 104 languages with [open-google-translator](https://github.com/vidya-hub/open-google-translator)
 - [x] Contact form
 - [x] IFrame inlining
 - [ ] Auto scan 404

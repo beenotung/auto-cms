@@ -58,7 +58,7 @@
     "db:gen-proxy": "erd-to-proxy --factory < erd.txt > src/proxy.ts"
   },
   "dependencies": {
-    "@beenotung/tslib": "^23.4.0",
+    "@beenotung/tslib": "^23.8.0",
     "better-sqlite3": "^9.5.0",
     "better-sqlite3-proxy": "^2.6.3",
     "better-sqlite3-schema": "^3.1.4",
@@ -74,6 +74,7 @@
     "listening-on": "^2.0.9",
     "mime-detect": "^1.2.0",
     "node-easynmt": "^1.1.1",
+    "open-google-translator": "github:beenotung/open-google-translator#patch-2",
     "populate-env": "^2.1.0"
   },
   "devDependencies": {

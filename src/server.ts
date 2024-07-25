@@ -27,10 +27,10 @@ import {
   loadLangFile,
   setupEasyNMT,
   translateHTML,
-  translateText,
-  translateIntoTraditional,
   langDictParser,
   Lang,
+  en_to_zh,
+  to_hk,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -410,12 +410,9 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       dict[key] = word
       writeFileSync(file, JSON.stringify(dict, null, 2) + '\n')
     }
+
     if (!word.zh_cn) {
-      let zh = await translateText({
-        text: word.en,
-        source_lang: 'en',
-        target_lang: 'zh',
-      }).catch(err => {
+      let zh = await en_to_zh(word.en).catch(err => {
         // FIXME: failed to translate, need to find out why
         console.error('failed to translate into zh:', err)
         return ''
@@ -426,7 +423,7 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       }
     }
     if (!word.zh_hk && word.zh_cn) {
-      let zh = await translateIntoTraditional(word.zh_cn).catch(err => {
+      let zh = await to_hk(word.en, word.zh_cn).catch(err => {
         // FIXME: failed to translate, need to find out why
         console.error('failed to translate into traditional:', err)
         return ''
