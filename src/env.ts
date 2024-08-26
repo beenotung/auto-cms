@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto'
 import { config as loadEnv } from 'dotenv'
-import { existsSync, writeFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { resolve } from 'path'
-import populateEnv from 'populate-env'
+import populateEnv, { saveEnv } from 'populate-env'
 
 loadEnv()
 
@@ -38,11 +38,7 @@ try {
   let secret = randomUUID()
   env.AUTO_CMS_PASSWORD = secret
   env.SESSION_SECRET = secret
-  let text = ''
-  for (let [key, value] of Object.entries(env)) {
-    text += `${key}=${value}\n`
-  }
-  writeFileSync(file, text)
+  saveEnv({ env })
 }
 
 if (resolve(env.SITE_DIR) == resolve(process.cwd())) {
