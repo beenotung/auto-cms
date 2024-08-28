@@ -12,7 +12,13 @@ export function setupConfigFile() {
     .trim()
     .split('\n')
     .map(line => line.trim())
-  let patterns = ['.env', '*_bk*.*']
+  let patterns = [
+    '.env',
+    '*_bk*.*',
+    '*.sqlite3',
+    '*.sqlite3-shm',
+    '*.sqlite3-wal',
+  ]
   for (let pattern of patterns) {
     if (!lines.includes(pattern)) {
       lines.push(pattern)
