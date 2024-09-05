@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { config as loadEnv } from 'dotenv'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-import populateEnv, { saveEnv } from 'populate-env'
+import populateEnv, { saveEnv, toBoolean } from 'populate-env'
 
 loadEnv()
 
@@ -48,14 +48,9 @@ if (resolve(env.SITE_DIR) == resolve(process.cwd())) {
   process.exit(1)
 }
 
-export function isEnabled(key: keyof typeof env) {
-  let value = env[key] as string
-  return value == 'true' || value.startsWith('enable')
-}
-
 export let config = {
-  enabled_auto_login: isEnabled('AUTO_CMS_AUTO_LOGIN'),
-  enabled_auto_backup: isEnabled('AUTO_CMS_AUTO_BACKUP'),
-  enabled_template: isEnabled('AUTO_CMS_TEMPLATE'),
-  enabled_multi_lang: isEnabled('AUTO_CMS_MULTI_LANG'),
+  enabled_auto_login: toBoolean(env.AUTO_CMS_AUTO_LOGIN),
+  enabled_auto_backup: toBoolean(env.AUTO_CMS_AUTO_BACKUP),
+  enabled_template: toBoolean(env.AUTO_CMS_TEMPLATE),
+  enabled_multi_lang: toBoolean(env.AUTO_CMS_MULTI_LANG),
 }
