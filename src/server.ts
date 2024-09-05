@@ -42,7 +42,7 @@ import { cookieMiddleware } from './cookie'
 
 setupKnex()
 
-if (config.enabled_multi_lang) {
+if (config.enabled_multi_lang && config.enabled_easynmt) {
   setupEasyNMT()
 }
 
