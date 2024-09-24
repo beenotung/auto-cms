@@ -649,6 +649,28 @@ app.use((req, res, next) => {
     next()
     return
   }
+
+  // "/_next/image?url=abc.jpeg&w=80&q=50" -> "/_next/image/url=abc.jpeg&w=80&q=50"
+  if (req.path === '/_next/image') {
+    let dir = join(env.SITE_DIR, '/_next/image')
+    let filenames = readdirSync(dir)
+    find_file: for (let filename of filenames) {
+      let params = new URLSearchParams(filename)
+      for (let [key, value] of params.entries()) {
+        if (req.query[key] != value) {
+          continue find_file
+        }
+      }
+      let file = resolve(join(dir, filename))
+      let url = params.get('url')!.toLowerCase()
+      let ext = extname(url)
+      if (ext == '.jpg') ext = '.jpeg'
+      if (ext) res.setHeader('Content-Type', 'image/' + ext.replace('.', ''))
+      sendFile(res, file)
+      return
+    }
+  }
+
   try {
     let path = resolvePathname({ site_dir, pathname: req.path })
     if ('error' in path) {

@@ -43,6 +43,7 @@ Auto turn any webpage into editable CMS without coding.
 - [x] Auto setup `.env` file
 - [x] Robust
   - Correctly set Content-Type even when the filename of the HTML file is not ending with `.html`
+  - Support next.js image proxy url (e.g. "/\_next/image?url=xxx&w=xx&q=xx")
   - Auto backup edits
   - View and restore from backups
 
