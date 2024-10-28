@@ -756,6 +756,17 @@ class AutoCMSMenu extends HTMLElement {
           n++
         }
       }
+      for (let node of document.querySelectorAll('noscript')) {
+        if (
+          /<img(.|\n)*src="https:\/\/www\.facebook\.com\/tr\?/.test(
+            node.innerText,
+          )
+        ) {
+          // facebook tracking pixel
+          node.remove()
+          n++
+        }
+      }
       button.textContent = `Removed ${n} scripts`
     })
     this.addMenuItem(miscSection, 'Rearrange head & body', async event => {
