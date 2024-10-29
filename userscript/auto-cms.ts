@@ -716,7 +716,7 @@ class AutoCMSMenu extends HTMLElement {
       for (let node of nodes) {
         node.remove()
       }
-      button.textContent = `Cleanup ${nodes.length} elements`
+      button.textContent = `Deduplicated ${nodes.length} elements by selector`
     })
     this.addMenuItem(miscSection, 'Deduplicate Scripts', async event => {
       let button = event.target as HTMLButtonElement
@@ -780,7 +780,7 @@ class AutoCMSMenu extends HTMLElement {
           n++
         }
       }
-      button.textContent = `Cleanup ${n} elements`
+      button.textContent = `Deduplicated ${n} classes`
     })
     this.addMenuItem(miscSection, 'Remove Invisible IFrames', async event => {
       let button = event.target as HTMLButtonElement
@@ -810,7 +810,7 @@ class AutoCMSMenu extends HTMLElement {
           n++
         }
       }
-      button.textContent = `Removed ${n} scripts`
+      button.textContent = `Removed ${n} iframes`
     })
     this.addMenuItem(miscSection, 'Remove Tracking Scripts', async event => {
       let button = event.target as HTMLButtonElement
