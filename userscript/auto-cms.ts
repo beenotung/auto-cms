@@ -737,18 +737,10 @@ class AutoCMSMenu extends HTMLElement {
       }
       button.textContent = `Cleanup ${n} elements`
     })
-    this.addMenuItem(miscSection, 'Remove Tracking Scripts', async event => {
+    this.addMenuItem(miscSection, 'Remove Invisible IFrames', async event => {
       let button = event.target as HTMLButtonElement
       let n = 0
-      let selectors = [
-        'script[src*="://www.googleadservices.com/pagead/conversion/"]',
-        'script[src*="://googleads.g.doubleclick.net/"]',
-        'script[src*="://static.doubleclick.net/"]',
-        'iframe[src*="://td.doubleclick.net/"]',
-        'script[src*="://www.googletagmanager.com/gtag/js"]',
-        'script[src*="://connect.facebook.net/signals/config/"]',
-        'script[src*="://connect.facebook.net/en_US/fbevents.js"]',
-      ]
+      let selectors = ['iframe[width="0"]', 'iframe[height="0"]']
       for (let selector of selectors) {
         let nodes = document.querySelectorAll(selector)
         for (let node of nodes) {
@@ -765,6 +757,55 @@ class AutoCMSMenu extends HTMLElement {
           // facebook tracking pixel
           node.remove()
           n++
+        }
+      }
+      button.textContent = `Removed ${n} scripts`
+    })
+    this.addMenuItem(miscSection, 'Remove Tracking Scripts', async event => {
+      let button = event.target as HTMLButtonElement
+      let n = 0
+      let selectors = [
+        'script[src*="://www.googleadservices.com/pagead/conversion/"]',
+        'script[src*="://googleads.g.doubleclick.net/"]',
+        'script[src*="://static.doubleclick.net/"]',
+        'iframe[src*="://td.doubleclick.net/"]',
+        'script[src*="://www.googletagmanager.com/gtag/"]',
+        'script[src*="://connect.facebook.net/signals/config/"]',
+        'script[src*="://connect.facebook.net/en_US/fbevents.js"]',
+        'script[src*="://js.callrail.com/"]',
+        'script[src*="://utt.impactcdn.com/"]',
+        'script[src*="://browser.sentry-cdn.com/"]',
+        'script[src*="://scripts.kissmetrics.io/"]',
+        'script[src*="://www.clickcease.com/"]',
+      ]
+      for (let selector of selectors) {
+        let nodes = document.querySelectorAll(selector)
+        for (let node of nodes) {
+          node.remove()
+          n++
+        }
+      }
+
+      let keywords = [
+        // facebook tracking pixel
+        'https://www.facebook.com/tr?',
+        'https://www.googletagmanager.com/gtm.js',
+        'https://utt.impactcdn.com/',
+        'https://monitor.clickcease.com',
+        'https://www.clickcease.com/monitor/stat.js',
+        'https://cdn.mida.so/js/optimize.js?',
+      ]
+      for (let node of document.querySelectorAll<HTMLElement>(
+        'script,noscript',
+      )) {
+        let text = node.textContent
+        if (!text) continue
+        for (let keyword of keywords) {
+          if (text.includes(keyword)) {
+            node.remove()
+            n++
+            break
+          }
         }
       }
       button.textContent = `Removed ${n} scripts`
