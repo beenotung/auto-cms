@@ -21,7 +21,7 @@ function onContextMenu(event: MouseEvent) {
     return
   }
   let target = event.target
-  if (!(target instanceof HTMLElement)) {
+  if (!(target instanceof HTMLElement) && !(target instanceof SVGElement)) {
     return
   }
   event.preventDefault()
@@ -114,7 +114,7 @@ function exportHTML() {
   return html
 }
 
-function toTagText(target: HTMLElement): string {
+function toTagText(target: HTMLElement | SVGElement): string {
   return target.outerHTML.replace(target.innerHTML, '').split('</')[0]
 }
 
@@ -193,7 +193,7 @@ class AutoCMSMenu extends HTMLElement {
 
   shadowRoot: ShadowRoot
 
-  target?: HTMLElement
+  target?: HTMLElement | SVGElement
 
   teardownFns: Array<() => void> = []
 
@@ -342,7 +342,7 @@ class AutoCMSMenu extends HTMLElement {
       )
     })
     this.addMenuItem(copySection, 'Easy Mode', event => {
-      let addTarget = (target: HTMLElement, index: number) => {
+      let addTarget = (target: HTMLElement | SVGElement, index: number) => {
         if (target == document.body) return
         let targetText = `${index}: ${toTagText(target)}`
         let clonedTarget: HTMLElement | null = null
@@ -375,7 +375,7 @@ class AutoCMSMenu extends HTMLElement {
       alert('right click > inspect > right-click element > click "Delete Node"')
     })
     this.addMenuItem(removeSection, 'Easy Mode', event => {
-      let addTarget = (target: HTMLElement, index: number) => {
+      let addTarget = (target: HTMLElement | SVGElement, index: number) => {
         if (target == document.body) return
         let targetText = `${index}: ${toTagText(target)}`
         let remove = this.wrapTeardownFn(() => {
@@ -383,11 +383,11 @@ class AutoCMSMenu extends HTMLElement {
           button.remove()
         })
         let { button } = this.addMenuItem(removeSection, targetText, event => {
-          if (!target.hidden) {
-            target.hidden = true
+          if (!target.hasAttribute('hidden')) {
+            target.setAttribute('hidden', '')
             button.textContent = 'Undo'
           } else {
-            target.hidden = false
+            target.removeAttribute('hidden')
             button.textContent = targetText
           }
           remove.toggle()
@@ -407,15 +407,15 @@ class AutoCMSMenu extends HTMLElement {
       )
     })
     this.addMenuItem(hideSection, 'Easy Mode', event => {
-      let addTarget = (target: HTMLElement, index: number) => {
+      let addTarget = (target: HTMLElement | SVGElement, index: number) => {
         if (target == document.body) return
         let targetText = `${index}: ${toTagText(target)}`
         let { button } = this.addMenuItem(hideSection, targetText, event => {
-          if (!target.hidden) {
-            target.hidden = true
+          if (!target.hasAttribute('hidden')) {
+            target.setAttribute('hidden', '')
             button.textContent = 'Undo'
           } else {
-            target.hidden = false
+            target.removeAttribute('hidden')
             button.textContent = targetText
           }
         })
@@ -939,7 +939,7 @@ class AutoCMSMenu extends HTMLElement {
     }
   }
 
-  show(event: MouseEvent, target: HTMLElement) {
+  show(event: MouseEvent, target: HTMLElement | SVGElement) {
     AutoCMSMenu.instance?.remove()
     AutoCMSMenu.instance = this
     if (event.y < window.innerHeight / 2) {
