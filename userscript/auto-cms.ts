@@ -708,6 +708,16 @@ class AutoCMSMenu extends HTMLElement {
 </nav>
 `
     })
+    this.addMenuItem(miscSection, 'Deduplicate Selector', async event => {
+      let button = event.target as HTMLButtonElement
+      let selector = prompt('selector: ')
+      if (!selector) return
+      let nodes = Array.from(document.querySelectorAll(selector)).slice(1)
+      for (let node of nodes) {
+        node.remove()
+      }
+      button.textContent = `Cleanup ${nodes.length} elements`
+    })
     this.addMenuItem(miscSection, 'Deduplicate Scripts', async event => {
       let button = event.target as HTMLButtonElement
       let n = 0
