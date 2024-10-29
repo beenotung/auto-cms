@@ -844,7 +844,10 @@ class AutoCMSMenu extends HTMLElement {
         // facebook tracking pixel
         'https://www.facebook.com/tr?',
         'https://connect.facebook.net/en_US/fbevents.js"',
+        // google tag manager
         'https://www.googletagmanager.com/gtm.js',
+        "gtag('js', new Date())",
+        "gtag('config', '",
         'https://utt.impactcdn.com/',
         'https://monitor.clickcease.com',
         'https://www.clickcease.com/monitor/stat.js',
