@@ -906,7 +906,7 @@ class AutoCMSMenu extends HTMLElement {
       let button = event.target as HTMLButtonElement
       let pathname = prompt(
         'Pathname:',
-        location.pathname.replaceAll(/_bk[0-9T]{15}/g, ''),
+        decodeURI(location.pathname).replaceAll(/_bk[0-9T]{15}/g, ''),
       )
       if (!pathname) return
       let path = await resolveFilePathname(pathname)
