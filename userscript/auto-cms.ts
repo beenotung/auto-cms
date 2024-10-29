@@ -793,6 +793,12 @@ class AutoCMSMenu extends HTMLElement {
           n++
         }
       }
+      for (let node of document.querySelectorAll('iframe')) {
+        if (node.style.opacity == '0') {
+          node.remove()
+          n++
+        }
+      }
       for (let node of document.querySelectorAll('noscript')) {
         if (
           /<img(.|\n)*src="https:\/\/www\.facebook\.com\/tr\?/.test(
@@ -818,10 +824,13 @@ class AutoCMSMenu extends HTMLElement {
         'script[src*="://connect.facebook.net/signals/config/"]',
         'script[src*="://connect.facebook.net/en_US/fbevents.js"]',
         'script[src*="://js.callrail.com/"]',
+        'script[src*="//cdn.callrail.com/"]',
         'script[src*="://utt.impactcdn.com/"]',
         'script[src*="://browser.sentry-cdn.com/"]',
+        'script[src*="://js.sentry-cdn.com/"]',
         'script[src*="://scripts.kissmetrics.io/"]',
         'script[src*="://www.clickcease.com/"]',
+        'script[src*="://cdn.mida.so/js/"]',
       ]
       for (let selector of selectors) {
         let nodes = document.querySelectorAll(selector)
@@ -834,11 +843,13 @@ class AutoCMSMenu extends HTMLElement {
       let keywords = [
         // facebook tracking pixel
         'https://www.facebook.com/tr?',
+        'https://connect.facebook.net/en_US/fbevents.js"',
         'https://www.googletagmanager.com/gtm.js',
         'https://utt.impactcdn.com/',
         'https://monitor.clickcease.com',
         'https://www.clickcease.com/monitor/stat.js',
         'https://cdn.mida.so/js/optimize.js?',
+        '//scripts.kissmetrics.io/',
       ]
       for (let node of document.querySelectorAll<HTMLElement>(
         'script,noscript',
