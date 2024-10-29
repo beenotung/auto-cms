@@ -831,6 +831,7 @@ class AutoCMSMenu extends HTMLElement {
         'script[src*="://scripts.kissmetrics.io/"]',
         'script[src*="://www.clickcease.com/"]',
         'script[src*="://cdn.mida.so/js/"]',
+        'script[src*="://static.hotjar.com/"]',
       ]
       for (let selector of selectors) {
         let nodes = document.querySelectorAll(selector)
