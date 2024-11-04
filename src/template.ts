@@ -15,14 +15,13 @@ export function applyTemplates(options: {
     let found = false
     let matches = html.match(/{\[(.*?)\]}/g) || []
     for (let key of matches) {
-      // e.g. '{[_.KEY]:value, arr: []}'
-      if (key.includes(']')) {
-        continue
-      }
-
       // e.g. '{[/header.html]}'
       // e.g. '{[header.html]}'
+      // e.g. '{[_.KEY]:value, arr: []}'
       let pathname = key.slice(2, -2)
+      if (pathname.includes(']')) {
+        continue
+      }
       let file =
         pathname[0] == '/'
           ? resolve(join(site_dir, pathname))
