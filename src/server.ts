@@ -159,6 +159,8 @@ app.use((req, res, next) => {
   let base_filename = basename(file_path.file).replaceAll(/_bk[0-9T]{15}/g, '')
   for (let filename of filenames) {
     let href = join(dir.replace(site_dir, '/'), filename)
+      .replaceAll('//', '/')
+      .replaceAll('//', '/')
     let file = join(dir, filename)
     let stat = statSync(file)
     let type = '[F]'
