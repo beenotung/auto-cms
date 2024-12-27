@@ -7,6 +7,10 @@ import { Parser, array, dict, enums, literal, object, string } from 'cast.ts'
 import { TaskQueue } from '@beenotung/tslib/task/task-queue'
 import { TranslateLanguageData } from 'open-google-translator'
 import { memorize } from '@beenotung/tslib/memorize'
+import { isBetween } from '@beenotung/tslib/compare'
+import _emojiRegex from 'emoji-regex'
+
+let emojiRegex = _emojiRegex()
 
 let log = debug('auto-cms:i18n')
 log.enabled = env.NODE_ENV == 'development'
@@ -39,28 +43,64 @@ export let en_to_zh = memorize(async (en: string): Promise<string> => {
 })
 
 export let to_hk = memorize(async (en: string, zh: string): Promise<string> => {
-  if (!en.trim()) return en
-  if (!zh.trim()) return zh
+  async function translate(): Promise<string> {
+    if (!en.trim()) {
+      log('to_hk:', { zh })
+      return translateIntoTraditional(zh)
+    }
 
-  let hk: string
-  try {
-    log('to_hk:', { en })
-    let data = await googleTranslateQueue.runTask(() =>
-      TranslateLanguageData({
-        listOfWordsToTranslate: [en],
-        fromLanguage: 'en',
-        toLanguage: 'zh-tw',
-      }),
-    )
-    hk = data[0].translation
-  } catch (error) {
-    log('to_hk:', { zh })
-    hk = await translateIntoTraditional(zh)
+    try {
+      log('to_hk:', { en })
+      let data = await googleTranslateQueue.runTask(() =>
+        TranslateLanguageData({
+          listOfWordsToTranslate: [en],
+          fromLanguage: 'en',
+          toLanguage: 'zh-tw',
+        }),
+      )
+      return data[0].translation
+    } catch (error) {
+      if (!zh.trim()) {
+        throw error
+      }
+      log('to_hk:', { zh })
+      return translateIntoTraditional(zh)
+    }
   }
-
+  let hk = await translate()
   log('to_hk:', { hk })
-
   return hk
+})
+
+export let to_en = memorize(async (hk: string, zh: string): Promise<string> => {
+  async function translate(): Promise<string> {
+    if (hk.trim()) {
+      log('to_en:', { hk })
+      let data = await googleTranslateQueue.runTask(() =>
+        TranslateLanguageData({
+          listOfWordsToTranslate: [hk],
+          fromLanguage: 'zh-tw',
+          toLanguage: 'en',
+        }),
+      )
+      return data[0].translation
+    }
+    if (zh.trim()) {
+      log('to_en:', { zh })
+      let data = await googleTranslateQueue.runTask(() =>
+        TranslateLanguageData({
+          listOfWordsToTranslate: [zh],
+          fromLanguage: 'zh-cn',
+          toLanguage: 'en',
+        }),
+      )
+      return data[0].translation
+    }
+    return hk || zh
+  }
+  let en = await translate()
+  log('to_en:', { en })
+  return en
 })
 
 // FIXME: investigate error when translating: New Generative Tool For 3D Scenes launch soon!
@@ -192,4 +232,16 @@ export async function setupEasyNMT() {
       String(error),
     )
   }
+}
+
+export function detectLang(text: string) {
+  // log('detectLang:', { text })
+  for (let char of text) {
+    if (char.charCodeAt(0) >= 20000 && !emojiRegex.test(char)) {
+      // log('detectLang:', { lang: 'zh', text })
+      return 'zh' as const
+    }
+  }
+  // log('detectLang:', { lang: 'en' })
+  return 'en' as const
 }

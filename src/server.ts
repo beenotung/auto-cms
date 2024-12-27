@@ -31,6 +31,8 @@ import {
   Lang,
   en_to_zh,
   to_hk,
+  detectLang,
+  to_en,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -214,7 +216,7 @@ let parse_html_middleware = express.text({
   limit: env.FILE_SIZE_LIMIT,
   defaultCharset: 'utf-8',
 })
-let maxFileSize = bytes.parse(env.FILE_SIZE_LIMIT)
+let maxFileSize = bytes.parse(env.FILE_SIZE_LIMIT)!
 let createUploadForm = (options: { dir: string; filename: string }) =>
   new Formidable({
     uploadDir: options.dir,
@@ -432,8 +434,19 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       })
       if (zh) {
         word.zh_hk = zh
+        save()
       }
-      save()
+    }
+    if (!word.en || detectLang(word.en) === 'zh') {
+      let en = await to_en(word.zh_hk, word.zh_cn).catch(err => {
+        // FIXME: failed to translate, need to find out why
+        console.error('failed to translate into English:', err)
+        return ''
+      })
+      if (en) {
+        word.en = en
+        save()
+      }
     }
   }
 }
