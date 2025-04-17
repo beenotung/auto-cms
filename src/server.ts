@@ -34,6 +34,8 @@ import {
   detectLang,
   to_en,
   en_to_ar,
+  en_to_ja,
+  en_to_ko,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -379,7 +381,7 @@ function saveLangFile(file: string, content: string) {
     let word = dict[key]
     if (!word) {
       let en = decodeHTML(key.slice(2, -2))
-      word = { en, zh_cn: '', zh_hk: '', ar: '' }
+      word = { en, zh_cn: '', zh_hk: '', ar: '', ja: '', ko: '' }
       dict[key] = word
     }
   }
@@ -446,6 +448,26 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       })
       if (en) {
         word.en = en
+        save()
+      }
+    }
+    if (!word.ja) {
+      let ja = await en_to_ja(word.en).catch(err => {
+        console.error('failed to translate into Japanese:', err)
+        return ''
+      })
+      if (ja) {
+        word.ja = ja
+        save()
+      }
+    }
+    if (!word.ko) {
+      let ko = await en_to_ko(word.en).catch(err => {
+        console.error('failed to translate into Korean:', err)
+        return ''
+      })
+      if (ko) {
+        word.ko = ko
         save()
       }
     }

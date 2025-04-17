@@ -17,36 +17,43 @@ log.enabled = env.NODE_ENV == 'development'
 
 let googleTranslateQueue = new TaskQueue()
 
-export let en_to_ar = memorize(async (en: string): Promise<string> => {
-  if (!en.trim()) return en
+function gen_from_en(lang: Exclude<Lang, 'zh_cn' | 'zh_hk'>) {
+  let label = `en_to_${lang}:`
+  return memorize(async (en: string): Promise<string> => {
+    if (!en.trim()) return en
 
-  log('en_to_ar:', { en })
+    log(label, { en })
 
-  let ar: string
-  try {
-    let data = await googleTranslateQueue.runTask(() =>
-      TranslateLanguageData({
-        listOfWordsToTranslate: [en],
-        fromLanguage: 'en',
-        toLanguage: 'ar',
-      }),
-    )
-    ar = data[0].translation
-    if (!ar) throw 'empty translate result'
-  } catch (error) {
-    // If Google Translate fails, use EasyNMT as fallback
-    ar = await patchedTranslate({
-      text: en,
-      target_lang: 'ar',
-      source_lang: 'en',
-      cached: false,
-    })
-  }
+    let result: string
+    try {
+      let data = await googleTranslateQueue.runTask(() =>
+        TranslateLanguageData({
+          listOfWordsToTranslate: [en],
+          fromLanguage: 'en',
+          toLanguage: lang,
+        }),
+      )
+      result = data[0].translation
+      if (!result) throw 'empty translate result'
+    } catch (error) {
+      // If Google Translate fails, use EasyNMT as fallback
+      result = await patchedTranslate({
+        text: en,
+        target_lang: lang,
+        source_lang: 'en',
+        cached: false,
+      })
+    }
 
-  log('en_to_ar:', { ar })
+    log(label, { [lang]: result })
 
-  return ar
-})
+    return result
+  })
+}
+
+export let en_to_ar = gen_from_en('ar')
+export let en_to_ja = gen_from_en('ja')
+export let en_to_ko = gen_from_en('ko')
 
 export let en_to_zh = memorize(async (en: string): Promise<string> => {
   if (!en.trim()) return en
@@ -205,7 +212,7 @@ export let LangFileSuffix = '.json'
 // key with {{ }} -> LangText
 export type LangDict = Record<string, LangText>
 
-export type Lang = 'en' | 'zh_cn' | 'zh_hk' | 'ar'
+export type Lang = 'en' | 'zh_cn' | 'zh_hk' | 'ja' | 'ko' | 'ar'
 
 // lang -> text content
 export type LangText = Record<Lang, string>
@@ -214,7 +221,7 @@ export let langDictParser = dict({
   key: string(),
   value: dict({
     key: string({
-      sampleValues: ['en', 'zh_cn', 'zh_hk', 'ar'],
+      sampleValues: ['en', 'zh_cn', 'zh_hk', 'ja', 'ko', 'ar'],
     }) as Parser<Lang>,
     value: string(),
   }),
@@ -268,22 +275,33 @@ export async function setupEasyNMT() {
 }
 
 export function detectLang(text: string) {
-  // log('detectLang:', { text })
   for (let char of text) {
     let code = char.charCodeAt(0)
 
     // Arabic character range
     if (code >= 0x0600 && code <= 0x06ff && !emojiRegex.test(char)) {
-      // log('detectLang:', { lang: 'ar' })
       return 'ar' as const
     }
 
-    // Chinese character range
+    // Japanese Hiragana range
+    if (code >= 0x3040 && code <= 0x309f && !emojiRegex.test(char)) {
+      return 'ja' as const
+    }
+
+    // Japanese Katakana range
+    if (code >= 0x30a0 && code <= 0x30ff && !emojiRegex.test(char)) {
+      return 'ja' as const
+    }
+
+    // Korean Hangul range
+    if (code >= 0xac00 && code <= 0xd7af && !emojiRegex.test(char)) {
+      return 'ko' as const
+    }
+
+    // Chinese character range (includes Kanji used in Japanese)
     if (code >= 20000 && !emojiRegex.test(char)) {
-      // log('detectLang:', { lang: 'zh' })
       return 'zh' as const
     }
   }
-  // log('detectLang:', { lang: 'en' })
   return 'en' as const
 }

@@ -76,7 +76,7 @@ npx -y auto-cms-server
 
 ### Multi Language
 
-The `LANG` cookie is used to specified the client-preferred language. Possible values are: `en`, `zh_cn`, and `zh_hk`.
+The `LANG` cookie is used to specified the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.
 
 The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
 
@@ -96,6 +96,14 @@ Below is example UI and code to show and set the language:
   <label>
     <input type="radio" name="lang" value="zh_hk" />
     繁體中文
+  </label>
+  <label>
+    <input type="radio" name="lang" value="ja" />
+    日本語
+  </label>
+  <label>
+    <input type="radio" name="lang" value="ko" />
+    한국어
   </label>
   <label>
     <input type="radio" name="lang" value="ar" />
