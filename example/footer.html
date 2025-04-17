@@ -36,12 +36,13 @@
   </form>
   <script>
     {
-      let lang = new URLSearchParams(document.cookie).get('LANG')
+      let lang = new URLSearchParams(document.cookie).get('lang')
       langForm.lang.value = lang
       langForm.lang.forEach(input => {
         input.addEventListener('change', event => {
           if (input.checked) {
-            document.cookie = 'LANG=' + input.value
+            let maxAge = 365 * 24 * 60 * 60 // one year in seconds
+            document.cookie = `lang=${input.value}; path=/; max-age=${maxAge}`
             location.reload()
           }
         })

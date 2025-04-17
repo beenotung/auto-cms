@@ -812,10 +812,10 @@ function sendHTML(
 
   let lang: Lang | null = null
   if (config.enabled_multi_lang) {
-    lang = req.cookies.LANG
+    lang = req.cookies.lang
     if (!lang) {
       lang = env.AUTO_CMS_DEFAULT_LANG
-      res.cookie('LANG', lang)
+      res.cookie('lang', lang)
     }
   }
 

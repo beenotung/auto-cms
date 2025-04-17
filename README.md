@@ -76,7 +76,7 @@ npx -y auto-cms-server
 
 ### Multi Language
 
-The `LANG` cookie is used to specified the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.
+The `lang` cookie is used to specify the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.
 
 The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
 
@@ -112,12 +112,13 @@ Below is example UI and code to show and set the language:
 </form>
 <script>
   {
-    let lang = new URLSearchParams(document.cookie).get('LANG')
+    let lang = new URLSearchParams(document.cookie).get('lang')
     langForm.lang.value = lang
     langForm.lang.forEach(input => {
       input.addEventListener('change', event => {
         if (input.checked) {
-          document.cookie = 'LANG=' + input.value
+          let maxAge = 365 * 24 * 60 * 60 // one year in seconds
+          document.cookie = `lang=${input.value}; path=/; max-age=${maxAge}`
           location.reload()
         }
       })
