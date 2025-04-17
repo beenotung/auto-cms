@@ -33,6 +33,7 @@ import {
   to_hk,
   detectLang,
   to_en,
+  en_to_ar,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -378,7 +379,7 @@ function saveLangFile(file: string, content: string) {
     let word = dict[key]
     if (!word) {
       let en = decodeHTML(key.slice(2, -2))
-      word = { en, zh_cn: '', zh_hk: '' }
+      word = { en, zh_cn: '', zh_hk: '', ar: '' }
       dict[key] = word
     }
   }
@@ -445,6 +446,17 @@ async function autoTranslate(options: { file: string; dict: LangDict }) {
       })
       if (en) {
         word.en = en
+        save()
+      }
+    }
+    if (!word.ar) {
+      let ar = await en_to_ar(word.en).catch(err => {
+        // FIXME: failed to translate, need to find out why
+        console.error('failed to translate into Arabic:', err)
+        return ''
+      })
+      if (ar) {
+        word.ar = ar
         save()
       }
     }

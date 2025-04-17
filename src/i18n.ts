@@ -17,6 +17,37 @@ log.enabled = env.NODE_ENV == 'development'
 
 let googleTranslateQueue = new TaskQueue()
 
+export let en_to_ar = memorize(async (en: string): Promise<string> => {
+  if (!en.trim()) return en
+
+  log('en_to_ar:', { en })
+
+  let ar: string
+  try {
+    let data = await googleTranslateQueue.runTask(() =>
+      TranslateLanguageData({
+        listOfWordsToTranslate: [en],
+        fromLanguage: 'en',
+        toLanguage: 'ar',
+      }),
+    )
+    ar = data[0].translation
+    if (!ar) throw 'empty translate result'
+  } catch (error) {
+    // If Google Translate fails, use EasyNMT as fallback
+    ar = await patchedTranslate({
+      text: en,
+      target_lang: 'ar',
+      source_lang: 'en',
+      cached: false,
+    })
+  }
+
+  log('en_to_ar:', { ar })
+
+  return ar
+})
+
 export let en_to_zh = memorize(async (en: string): Promise<string> => {
   if (!en.trim()) return en
 
@@ -174,7 +205,7 @@ export let LangFileSuffix = '.json'
 // key with {{ }} -> LangText
 export type LangDict = Record<string, LangText>
 
-export type Lang = 'en' | 'zh_cn' | 'zh_hk'
+export type Lang = 'en' | 'zh_cn' | 'zh_hk' | 'ar'
 
 // lang -> text content
 export type LangText = Record<Lang, string>
@@ -182,7 +213,9 @@ export type LangText = Record<Lang, string>
 export let langDictParser = dict({
   key: string(),
   value: dict({
-    key: string({ sampleValues: ['en', 'zh_cn', 'zh_hk'] }) as Parser<Lang>,
+    key: string({
+      sampleValues: ['en', 'zh_cn', 'zh_hk', 'ar'],
+    }) as Parser<Lang>,
     value: string(),
   }),
 })
@@ -237,8 +270,17 @@ export async function setupEasyNMT() {
 export function detectLang(text: string) {
   // log('detectLang:', { text })
   for (let char of text) {
-    if (char.charCodeAt(0) >= 20000 && !emojiRegex.test(char)) {
-      // log('detectLang:', { lang: 'zh', text })
+    let code = char.charCodeAt(0)
+
+    // Arabic character range
+    if (code >= 0x0600 && code <= 0x06ff && !emojiRegex.test(char)) {
+      // log('detectLang:', { lang: 'ar' })
+      return 'ar' as const
+    }
+
+    // Chinese character range
+    if (code >= 20000 && !emojiRegex.test(char)) {
+      // log('detectLang:', { lang: 'zh' })
       return 'zh' as const
     }
   }

@@ -97,6 +97,10 @@ Below is example UI and code to show and set the language:
     <input type="radio" name="lang" value="zh_hk" />
     繁體中文
   </label>
+  <label>
+    <input type="radio" name="lang" value="ar" />
+    عربي
+  </label>
 </form>
 <script>
   {
