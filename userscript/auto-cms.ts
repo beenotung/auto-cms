@@ -870,6 +870,12 @@ class AutoCMSMenu extends HTMLElement {
       }
       button.textContent = `Removed ${n} scripts`
     })
+    this.addMenuItem(miscSection, 'Add Style', async event => {
+      this.addScript('style', 'Input CSS Code:')
+    })
+    this.addMenuItem(miscSection, 'Add Script', async event => {
+      this.addScript('script', 'Input Javascript Code:')
+    })
     this.addMenuItem(miscSection, 'Rearrange head & body', async event => {
       let button = event.target as HTMLButtonElement
       let n = 0
@@ -981,6 +987,23 @@ class AutoCMSMenu extends HTMLElement {
     ul.appendChild(li)
 
     return { li, button }
+  }
+
+  addScript(tag: string, message: string) {
+    let code = prompt(message)
+    if (!code?.trim()) return
+    let script = document.createElement(tag)
+    script.textContent = code
+    let id = prompt('id (optional attribute):')
+    if (id) {
+      script.id = id
+    }
+    let dest = prompt('Destination (head or body):')
+    if (dest == 'head') {
+      document.head.appendChild(script)
+    } else {
+      document.body.appendChild(script)
+    }
   }
 
   disconnectedCallback() {
