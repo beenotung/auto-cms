@@ -994,9 +994,13 @@ class AutoCMSMenu extends HTMLElement {
     if (!code?.trim()) return
     let script = document.createElement(tag)
     script.textContent = code
-    let id = prompt('id (optional attribute):')
+    let id = prompt('id (optional):')
     if (id) {
       script.id = id
+    }
+    let desc = prompt('description (optional):')
+    if (desc) {
+      script.setAttribute('description', desc)
     }
     let dest = prompt('Destination (head or body):')
     if (dest == 'head') {
