@@ -145,45 +145,68 @@ function addBootstrap() {
   addBootstrapJS()
 }
 
+function addFontAwesome() {
+  addStyleSheetLink({
+    url: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css',
+    search: 'font-awesome',
+    integrity:
+      'sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==',
+  })
+}
+
 function addBootstrapCSS() {
+  addStyleSheetLink({
+    url: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
+    search: 'bootstrap',
+    integrity:
+      'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
+  })
+}
+
+function addBootstrapJS() {
+  addScriptLink({
+    url: 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
+    search: 'bootstrap',
+    integrity:
+      'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4',
+  })
+}
+
+function addStyleSheetLink(options: {
+  url: string
+  search: string
+  integrity: string
+}) {
   let links = document.querySelectorAll<HTMLLinkElement>(
     'link[rel="stylesheet"]',
   )
   for (let link of links) {
-    if (link.href.includes('bootstrap')) {
+    if (link.href.includes(options.search)) {
       return
     }
   }
   let link = document.createElement('link')
-  link.setAttribute(
-    'href',
-    'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
-  )
+  link.setAttribute('href', options.url)
   link.setAttribute('rel', 'stylesheet')
-  link.setAttribute(
-    'integrity',
-    'sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65',
-  )
+  link.setAttribute('integrity', options.integrity)
   link.setAttribute('crossorigin', 'anonymous')
   appendToHead(link)
 }
 
-function addBootstrapJS() {
+function addScriptLink(options: {
+  url: string
+  search: string
+  integrity: string
+}) {
   let scripts = document.querySelectorAll<HTMLScriptElement>('script[src]')
   for (let script of scripts) {
-    if (script.src.includes('bootstrap')) {
+    if (script.src.includes(options.search)) {
       return
     }
   }
   let script = document.createElement('script')
-  script.setAttribute(
-    'src',
-    'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-  )
-  script.setAttribute(
-    'integrity',
-    'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4',
-  )
+  script.setAttribute('src', options.url)
+  script.setAttribute('integrity', options.integrity)
   script.setAttribute('crossorigin', 'anonymous')
   document.body.appendChild(script)
 }
@@ -604,6 +627,62 @@ class AutoCMSMenu extends HTMLElement {
       og_meta.setAttribute('content', ans)
     })
 
+    let uiLibrarySection = this.addSection('UI Library')
+    this.addMenuItem(uiLibrarySection, 'Add Font Awesome', event => {
+      addFontAwesome()
+    })
+    this.addMenuItem(uiLibrarySection, 'Add Bootstrap', event => {
+      addBootstrap()
+    })
+    this.addMenuItem(uiLibrarySection, 'Add Navbar', event => {
+      let header = document.body.querySelector('header')
+      if (!header) {
+        header = document.createElement('header')
+        document.body.prepend(header)
+      }
+      addBootstrap()
+      let nav = document.createElement('nav')
+      header.prepend(nav)
+      nav.outerHTML = /* html */ `
+<nav class="navbar navbar-expand-lg bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Navbar</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Link</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Dropdown
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">Action</a></li>
+            <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Something else here</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled">Disabled</a>
+        </li>
+      </ul>
+      <form class="d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</nav>
+`
+    })
+
     let miscSection = this.addSection('Misc')
     this.addMenuItem(miscSection, 'Favicon', async event => {
       let nodes = Array.from(
@@ -659,54 +738,6 @@ class AutoCMSMenu extends HTMLElement {
       for (let i = 1; i < nodes.length; i++) {
         nodes[i].remove()
       }
-    })
-    this.addMenuItem(miscSection, 'Add Navbar', event => {
-      let header = document.body.querySelector('header')
-      if (!header) {
-        header = document.createElement('header')
-        document.body.prepend(header)
-      }
-      addBootstrap()
-      let nav = document.createElement('nav')
-      header.prepend(nav)
-      nav.outerHTML = /* html */ `
-<nav class="navbar navbar-expand-lg bg-light">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Dropdown
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link disabled">Disabled</a>
-        </li>
-      </ul>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
-    </div>
-  </div>
-</nav>
-`
     })
     this.addMenuItem(miscSection, 'Deduplicate Selector', async event => {
       let button = event.target as HTMLButtonElement
