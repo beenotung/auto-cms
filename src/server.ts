@@ -675,6 +675,9 @@ app.post(
           let date = new TimezoneDate(value, { timezone })
           value = `${date.toLocaleString()} (GMT+${timezone})`
         }
+        if (key == 'lang') {
+          value = Langs.find(lang => lang.code == value)?.name || value
+        }
         if (value && typeof value === 'object') {
           value = JSON.stringify(value)
         }
