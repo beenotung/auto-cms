@@ -1,13 +1,33 @@
-import { Lang, LangDict, LangText } from '../src/i18n'
+import type { Lang, LangDict, Langs, LangText } from '../src/i18n'
 import { fetch_json, resolveFilePathname } from './api'
 
 declare var pathnameNode: HTMLElement
 declare var errorMessage: HTMLElement
+declare var tableHeader: HTMLElement
 declare var tableBody: HTMLElement
 declare var saveButton: HTMLButtonElement
 
+let trTemplate = tableBody.querySelector<HTMLElement>('tr')!
+
 async function init() {
   try {
+    errorMessage.textContent = 'Loading langs...'
+    let { langs } = await fetch_json<{ langs: typeof Langs }>(
+      '/auto-cms/langs',
+      {},
+    )
+    for (let lang of langs) {
+      let th = document.createElement('th')
+      th.textContent = lang.name
+      tableHeader.appendChild(th)
+
+      let td = document.createElement('td')
+      let textarea = document.createElement('textarea')
+      textarea.dataset.value = lang.code
+      td.appendChild(textarea)
+      trTemplate.appendChild(td)
+    }
+
     errorMessage.textContent = 'Resolving pathname...'
 
     const params = new URLSearchParams(window.location.search)
@@ -24,7 +44,6 @@ async function init() {
     errorMessage.textContent = 'Loading language translations...'
 
     let dict = await fetch_json<LangDict>(jsonPathname, {})
-    let trTemplate = tableBody.querySelector<HTMLElement>('tr')!
     let keySpanTemplate =
       trTemplate.querySelector<HTMLSpanElement>('[data-text="key"]')!
 

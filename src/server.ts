@@ -37,6 +37,7 @@ import {
   en_to_ar,
   en_to_ja,
   en_to_ko,
+  Langs,
 } from './i18n'
 import { decodeHTML } from './html'
 import { setupKnex } from './knex'
@@ -584,6 +585,10 @@ app.get('/auto-cms/multi-lang', (req, res, next) => {
 let multi_lang_js_file = resolve(pkg_public_dir, 'multi-lang.js')
 app.get('/auto-cms/multi-lang.js', (req, res, next) => {
   res.sendFile(multi_lang_js_file)
+})
+
+app.get('/auto-cms/langs', (req, res, next) => {
+  res.json({ langs: Langs })
 })
 
 let site_dir = resolve(env.SITE_DIR)

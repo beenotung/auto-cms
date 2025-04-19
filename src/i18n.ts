@@ -212,7 +212,16 @@ export let LangFileSuffix = '.json'
 // key with {{ }} -> LangText
 export type LangDict = Record<string, LangText>
 
-export type Lang = 'en' | 'zh_cn' | 'zh_hk' | 'ja' | 'ko' | 'ar'
+export type Lang = (typeof Langs)[number]['code']
+
+export const Langs = [
+  { code: 'en', name: 'English' },
+  { code: 'zh_cn', name: 'Simplified Chinese' },
+  { code: 'zh_hk', name: 'Traditional Chinese' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'ar', name: 'Arabic' },
+] as const
 
 // lang -> text content
 export type LangText = Record<Lang, string>
