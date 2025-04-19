@@ -761,6 +761,11 @@ class AutoCMSMenu extends HTMLElement {
         for (let node of nodes) {
           let str = extractFn(node)
           if (!str) {
+            let next = node.nextElementSibling
+            if (next && next.matches(selector) && !extractFn(next as T)) {
+              node.remove()
+              n++
+            }
             continue
           }
           if (!set.has(str)) {
