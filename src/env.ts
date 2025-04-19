@@ -20,6 +20,23 @@ export let env = {
   SUBMIT_CONTACT_RESULT_PAGE: 'default' as const,
   SESSION_SECRET: '',
   FILE_SIZE_LIMIT: '10MB',
+
+  /* for email */
+  EMAIL_SERVICE: 'google',
+  EMAIL_HOST: 'smtp.gmail.com',
+  EMAIL_PORT: 587,
+  EMAIL_USER: '',
+  EMAIL_PASSWORD: '',
+  ORIGIN: '',
+}
+applyDefaultEnv()
+
+function applyDefaultEnv() {
+  if (process.env.NODE_ENV === 'production') return
+  let PORT = process.env.PORT || env.PORT
+  env.EMAIL_USER ||= process.env.EMAIL_USER || 'skip'
+  env.EMAIL_PASSWORD ||= process.env.EMAIL_PASSWORD || 'skip'
+  env.ORIGIN ||= process.env.ORIGIN || 'http://localhost:' + PORT
 }
 
 try {

@@ -44,6 +44,8 @@ import { storeContact, storeRequest } from './store'
 import { applyTemplates } from './template'
 import { resolvePathname } from './file'
 import { cookieMiddleware } from './cookie'
+import { sendEmail } from './email'
+import { capitalize } from '@beenotung/tslib'
 
 setupKnex()
 
@@ -652,6 +654,33 @@ app.post(
     let error = ''
     try {
       storeContact(req)
+      let entries = Object.entries(req.body)
+      let text = ``
+      let html = ``
+      for (let [key, value] of entries) {
+        let label = key
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, char => char.toUpperCase())
+        if (value && typeof value === 'object') {
+          value = JSON.stringify(value)
+        }
+        text += `${label}: ${value}\n`
+        if (key == 'email') {
+          html += `<p>${label}: <a href="mailto:${value}">${value}</a></p>`
+        } else {
+          html += `<p>${label}: ${value}</p>`
+        }
+      }
+      let site_name = env.ORIGIN.split('://').pop()
+      sendEmail({
+        from: env.EMAIL_USER,
+        to: env.EMAIL_USER,
+        subject: 'Contact Form Submission to ' + site_name,
+        text,
+        html,
+      }).catch(err => {
+        console.error('failed to send email:', err)
+      })
     } catch (e) {
       error = String(e)
     }
