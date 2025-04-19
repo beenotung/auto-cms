@@ -34,6 +34,7 @@ email text NULL
 tel text NULL
 company_name text NULL
 business_nature text NULL
+lang text NULL
 remark text NULL
 extra text NULL
 submit_time integer

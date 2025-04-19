@@ -35,6 +35,7 @@ export function storeContact(req: Request) {
     tel: tel || null,
     company_name: company_name || null,
     business_nature: business_nature || null,
+    lang: req.cookies.lang || null,
     remark: remark || null,
     extra: Object.keys(extra).length == 0 ? null : JSON.stringify(extra),
     submit_time: Date.now(),
