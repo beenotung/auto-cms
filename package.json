@@ -77,7 +77,8 @@
     "node-easynmt": "^1.2.0",
     "nodemailer": "^6.10.1",
     "open-google-translator": "github:beenotung/open-google-translator#patch-2",
-    "populate-env": "^2.4.3"
+    "populate-env": "^2.4.3",
+    "timezone-date.ts": "^2.0.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",

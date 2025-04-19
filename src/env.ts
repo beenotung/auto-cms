@@ -22,6 +22,7 @@ export let env = {
   FILE_SIZE_LIMIT: '10MB',
 
   /* for email */
+  TIMEZONE_HOUR: +8,
   EMAIL_SERVICE: 'google',
   EMAIL_HOST: 'smtp.gmail.com',
   EMAIL_PORT: 587,

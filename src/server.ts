@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express'
 import { print } from 'listening-on'
 import { config, env } from './env'
+import { TimezoneDate } from 'timezone-date.ts'
 import { basename, dirname, extname, join, resolve } from 'path'
 import { autoLoginCMS, guardCMS, sessionMiddleware } from './session'
 import {
@@ -46,6 +47,7 @@ import { resolvePathname } from './file'
 import { cookieMiddleware } from './cookie'
 import { sendEmail } from './email'
 import { capitalize } from '@beenotung/tslib'
+import { Contact } from './proxy'
 
 setupKnex()
 
@@ -653,14 +655,21 @@ app.post(
   (req, res, next) => {
     let error = ''
     try {
-      storeContact(req)
-      let entries = Object.entries(req.body)
+      let contact = storeContact(req)
+      let entries = Object.entries(contact)
       let text = ``
       let html = ``
-      for (let [key, value] of entries) {
+      for (let [_key, value] of entries) {
+        if (value == null) continue
+        let key = _key as keyof Contact
         let label = key
           .replace(/_/g, ' ')
           .replace(/\b\w/g, char => char.toUpperCase())
+        if (key == 'submit_time' && typeof value === 'number') {
+          let timezone = env.TIMEZONE_HOUR
+          let date = new TimezoneDate(value, { timezone })
+          value = `${date.toLocaleString()} (GMT+${timezone})`
+        }
         if (value && typeof value === 'object') {
           value = JSON.stringify(value)
         }

@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { DBProxy, createProxy } from './proxy'
+import { Contact, DBProxy, createProxy } from './proxy'
 import { db } from './db'
 
 let _proxy: DBProxy | undefined
@@ -28,8 +28,7 @@ export function storeContact(req: Request) {
   let proxy = getProxy()
   let { name, email, tel, company_name, business_nature, remark, ...extra } =
     req.body || {}
-  let {} = req.body
-  let id = proxy.contact.push({
+  let contact: Contact = {
     name: name || null,
     email: email || null,
     tel: tel || null,
@@ -42,6 +41,8 @@ export function storeContact(req: Request) {
     confirm_time: null,
     dismiss_time: null,
     mailchimp_sync_time: null,
-  })
-  return { id }
+  }
+  let id = proxy.contact.push(contact)
+  contact.id = id
+  return contact
 }
