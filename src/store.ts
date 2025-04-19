@@ -18,7 +18,7 @@ export function storeRequest(req: Request) {
     url: req.url,
     user_agent: req.headers['user-agent'] || null,
     request_time: Date.now(),
-    lang: req.cookies.LANG || null,
+    lang: req.cookies.lang || null,
     is_admin: req.session.auto_cms_enabled || false,
   })
   return { id }
