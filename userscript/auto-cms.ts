@@ -901,11 +901,17 @@ class AutoCMSMenu extends HTMLElement {
       }
       button.textContent = `Removed ${n} scripts`
     })
-    this.addMenuItem(miscSection, 'Add Style', async event => {
-      this.addScript('style', 'Input CSS Code:')
+    this.addMenuItem(miscSection, 'Add Stylesheet Link', async event => {
+      this.addStyleSheetLink()
     })
-    this.addMenuItem(miscSection, 'Add Script', async event => {
-      this.addScript('script', 'Input Javascript Code:')
+    this.addMenuItem(miscSection, 'Add Script Link', async event => {
+      this.addInlineScript('script', 'Input Javascript Code:')
+    })
+    this.addMenuItem(miscSection, 'Add Inline Style', async event => {
+      this.addInlineScript('style', 'Input CSS Code:')
+    })
+    this.addMenuItem(miscSection, 'Add Inline Script', async event => {
+      this.addInlineScript('script', 'Input Javascript Code:')
     })
     this.addMenuItem(miscSection, 'Rearrange head & body', async event => {
       let button = event.target as HTMLButtonElement
@@ -1020,7 +1026,7 @@ class AutoCMSMenu extends HTMLElement {
     return { li, button }
   }
 
-  addScript(tag: string, message: string) {
+  addInlineScript(tag: string, message: string) {
     let code = prompt(message)
     if (!code?.trim()) return
     let script = document.createElement(tag)
@@ -1039,6 +1045,35 @@ class AutoCMSMenu extends HTMLElement {
     } else {
       document.body.appendChild(script)
     }
+  }
+
+  askLink() {
+    let url = prompt('URL:')
+    if (!url) return
+    url = url.replace(location.origin, '')
+    return url
+  }
+
+  addStyleSheetLink() {
+    let url = this.askLink()
+    if (!url) return
+    let target = prompt('Destination (head or body):')
+    let link = document.createElement('link')
+    link.setAttribute('rel', 'stylesheet')
+    link.setAttribute('href', url)
+    if (target == 'head') {
+      appendToHead(link)
+    } else {
+      document.body.appendChild(link)
+    }
+  }
+
+  addScriptLink() {
+    let url = this.askLink()
+    if (!url) return
+    let script = document.createElement('script')
+    script.setAttribute('src', url)
+    document.body.appendChild(script)
   }
 
   disconnectedCallback() {
