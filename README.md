@@ -112,7 +112,7 @@ Below is example UI and code to show and set the language:
 </form>
 <script>
   {
-    let lang = new URLSearchParams(document.cookie).get('lang')
+    let lang = Object.fromEntries(document.cookie.split(';').map(s=>s.trim().split('='))).lang
     langForm.lang.value = lang
     langForm.lang.forEach(input => {
       input.addEventListener('change', event => {
