@@ -76,7 +76,7 @@
     "mime-detect": "^1.3.0",
     "node-easynmt": "^1.2.0",
     "nodemailer": "^6.10.1",
-    "open-google-translator": "github:beenotung/open-google-translator#patch-2",
+    "open-google-translator": "^1.0.5",
     "populate-env": "^2.4.3",
     "timezone-date.ts": "^2.0.1"
   },
