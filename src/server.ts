@@ -63,6 +63,12 @@ setupConfigFile()
 
 let app = express()
 
+// app.disable('x-powered-by')
+// app.use((req, res, next) => {
+//   res.setHeader('X-Powered-By', 'auto-cms with Express')
+//   next()
+// })
+
 app.use(sessionMiddleware)
 app.use(cookieMiddleware)
 
