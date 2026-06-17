@@ -78,6 +78,8 @@ npx -y auto-cms-server
 
 The `lang` cookie is used to specify the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.
 
+> **Tip:** Use an AI agent (e.g. [opencode](https://opencode.ai) with free model like Big Pickle) to improve translation JSON files. Built-in per-text translation has no context, so "Train" in a button alone → 火車 🚂 (vehicle), but with the full page the AI knows it means 訓練 🎯 (training).
+
 The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
 
 Below is example UI and code to show and set the language:
