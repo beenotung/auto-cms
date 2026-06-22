@@ -59,6 +59,10 @@ Auto turn any webpage into editable CMS without coding.
 
 ## Usage
 
+1. Login at `/auto-cms` to enable the edit menu
+2. Navigate to any page on the site
+3. Press `Ctrl` or `Alt` key while **clicking** (left or right click) to show the edit menu
+
 Usage with installation to lock the version:
 
 ```bash
