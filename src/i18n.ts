@@ -1,7 +1,7 @@
 import { autoStartServer, patchedTranslate } from 'node-easynmt'
 import debug from 'debug'
 import { env } from './env'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { encodeHTML } from './html'
 import { Parser, array, dict, enums, literal, object, string } from 'cast.ts'
 import { TaskQueue } from '@beenotung/tslib/task/task-queue'
@@ -237,12 +237,17 @@ export let langDictParser = dict({
 })
 
 export function loadLangFile(file: string): LangDict | null {
+  let nonEmpty = false
   try {
-    let text = readFileSync(file).toString()
+    let text = readFileSync(file).toString().trim()
+    nonEmpty = text.length > 0
     let json = JSON.parse(text)
     return langDictParser.parse(json)
   } catch (error) {
-    // file not found
+    if (nonEmpty) {
+      console.error(`[i18n] failed to parse lang file: ${file}`)
+      console.error(error)
+    }
     return null
   }
 }
