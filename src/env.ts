@@ -55,6 +55,9 @@ try {
     }
   }
   console.error('Hint: auto setting the ".env" file')
+  console.error(
+    'Hint: set AUTO_CMS_TRAILING_SLASH=true to redirect /about -> /about/ if your pages use relative links (e.g. styles.css)',
+  )
   let secret = randomUUID()
   env.AUTO_CMS_PASSWORD = secret
   env.SESSION_SECRET = secret
