@@ -30,6 +30,7 @@ import {
   translateHTML,
   langDictParser,
   Lang,
+  resolveLang,
   en_to_zh,
   to_hk,
   detectLang,
@@ -875,10 +876,19 @@ function sendHTML(
 
   let lang: Lang | null = null
   if (config.enabled_multi_lang) {
-    lang = req.cookies.lang
-    if (!lang) {
-      lang = env.AUTO_CMS_DEFAULT_LANG
-      res.cookie('lang', lang)
+    // an explicit ?lang= wins over the saved cookie, so links shared on
+    // social media (and crawlers, which send no cookie) can pick a language
+    lang =
+      resolveLang(req.query.lang) ||
+      resolveLang(req.cookies.lang) ||
+      env.AUTO_CMS_DEFAULT_LANG
+
+    // remember the normalized choice so internal links stay in that language
+    // (skip when unchanged, to avoid a redundant Set-Cookie header)
+    if (req.cookies.lang !== lang) {
+      res.cookie('lang', lang, {
+        maxAge: config.lang_cookie_max_age,
+      })
     }
   }
 

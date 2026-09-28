@@ -18,6 +18,7 @@ export let env = {
   AUTO_CMS_ENABLE_EASYNMT: 'false',
   AUTO_CMS_TRAILING_SLASH: 'false',
   AUTO_CMS_DEFAULT_LANG: 'en' as const,
+  AUTO_CMS_LANG_COOKIE_DAYS: 365,
   SUBMIT_CONTACT_RESULT_PAGE: 'default' as const,
   SESSION_SECRET: '',
   FILE_SIZE_LIMIT: '10MB',
@@ -78,4 +79,5 @@ export let config = {
   enabled_multi_lang: toBoolean(env.AUTO_CMS_MULTI_LANG),
   enabled_easynmt: toBoolean(env.AUTO_CMS_ENABLE_EASYNMT),
   enabled_trailing_slash: toBoolean(env.AUTO_CMS_TRAILING_SLASH),
+  lang_cookie_max_age: env.AUTO_CMS_LANG_COOKIE_DAYS * 24 * 60 * 60 * 1000,
 }

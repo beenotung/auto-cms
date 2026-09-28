@@ -223,6 +223,24 @@ export const Langs = [
   { code: 'ar', name: 'Arabic' },
 ] as const
 
+function isLang(value: string): value is Lang {
+  return Langs.some(lang => lang.code === value)
+}
+
+// Resolve variants (e.g. en-GB, zh-Hans) into a supported code, or null.
+export function resolveLang(value: unknown): Lang | null {
+  if (!value || typeof value !== 'string') return null
+  let code = value.trim().toLowerCase().replace(/-/g, '_')
+  if (isLang(code)) return code
+  // "zh" is the only base without a matching code (we use zh_cn / zh_hk)
+  if (code === 'zh' || code.startsWith('zh_')) {
+    return /hans|_cn|_sg/.test(code) ? 'zh_cn' : 'zh_hk'
+  }
+  // fall back to the base subtag, e.g. en_gb -> en
+  let base = code.split('_')[0]
+  return isLang(base) ? base : null
+}
+
 // lang -> text content
 export type LangText = Record<Lang, string>
 

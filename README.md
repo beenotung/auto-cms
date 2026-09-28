@@ -98,6 +98,12 @@ that its relative links resolve correctly with the trailing slash.
 
 The `lang` cookie is used to specify the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.
 
+A `?lang=` query parameter (e.g. `?lang=zh_hk`) overrides the cookie and is saved into it.
+
+Region variants are normalized (e.g. `en-US` → `en`, `zh-Hans` → `zh_cn`).
+
+The cookie lifetime can be set in the environment variable `AUTO_CMS_LANG_COOKIE_DAYS` (default `365` days).
+
 > **Tip:** Use an AI agent (e.g. [opencode](https://opencode.ai) with free model like Big Pickle) to improve translation JSON files. Built-in per-text translation has no context, so "Train" in a button alone → 火車 🚂 (vehicle), but with the full page the AI knows it means 訓練 🎯 (training).
 
 The default value can be set in the environment variable `AUTO_CMS_DEFAULT_LANG`.
