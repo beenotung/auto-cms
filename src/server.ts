@@ -782,6 +782,17 @@ app.use((req, res, next) => {
       next()
       return
     }
+    // redirect directory page to the trailing-slash form when enabled
+    if (
+      config.enabled_trailing_slash &&
+      path.type === 'dir' &&
+      !req.path.endsWith('/')
+    ) {
+      let pathname = req.path.replace(/\/{2,}/g, '/') // avoid protocol-relative Location
+      let search = req.url.slice(req.path.length)
+      res.redirect(302, pathname + '/' + search) // 302 to keep the redirect easy to roll back
+      return
+    }
     let file = path.file
     let ext = extname(file)
     if (ext == '.html') {

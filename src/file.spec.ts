@@ -34,12 +34,14 @@ describe('resolvePathname()', () => {
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'file3.html')),
       exists: true,
+      type: 'file',
     })
 
     out = resolvePathname({ site_dir, pathname: '/file2.html' })
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'file2.html')),
       exists: false,
+      type: 'file',
     })
   })
 
@@ -48,6 +50,7 @@ describe('resolvePathname()', () => {
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'file2')),
       exists: true,
+      type: 'file',
     })
   })
 
@@ -56,13 +59,23 @@ describe('resolvePathname()', () => {
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'dir-with-index', 'index.html')),
       exists: true,
+      type: 'dir',
     })
 
     var out = resolvePathname({ site_dir, pathname: '/empty-dir' })
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'empty-dir', 'index.html')),
       exists: false,
+      type: 'dir',
     })
+  })
+
+  it('should mark directory pages so that the caller can redirect to trailing slash', () => {
+    var out = resolvePathname({ site_dir, pathname: '/dir-with-index' })
+    expect(out).to.have.property('type', 'dir')
+
+    var out = resolvePathname({ site_dir, pathname: '/file3' })
+    expect(out).to.have.property('type', 'file')
   })
 
   it('should resolve to .html file if exists', () => {
@@ -70,6 +83,7 @@ describe('resolvePathname()', () => {
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'file3.html')),
       exists: true,
+      type: 'file',
     })
   })
 
@@ -78,6 +92,7 @@ describe('resolvePathname()', () => {
     expect(out).to.deep.equals({
       file: resolve(join(site_dir, 'not-exists', 'index.html')),
       exists: false,
+      type: 'dir',
     })
   })
 })

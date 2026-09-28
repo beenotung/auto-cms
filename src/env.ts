@@ -16,6 +16,7 @@ export let env = {
   AUTO_CMS_TEMPLATE: 'true',
   AUTO_CMS_MULTI_LANG: 'true',
   AUTO_CMS_ENABLE_EASYNMT: 'false',
+  AUTO_CMS_TRAILING_SLASH: 'false',
   AUTO_CMS_DEFAULT_LANG: 'en' as const,
   SUBMIT_CONTACT_RESULT_PAGE: 'default' as const,
   SESSION_SECRET: '',
@@ -73,4 +74,5 @@ export let config = {
   enabled_template: toBoolean(env.AUTO_CMS_TEMPLATE),
   enabled_multi_lang: toBoolean(env.AUTO_CMS_MULTI_LANG),
   enabled_easynmt: toBoolean(env.AUTO_CMS_ENABLE_EASYNMT),
+  enabled_trailing_slash: toBoolean(env.AUTO_CMS_TRAILING_SLASH),
 }

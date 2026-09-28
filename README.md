@@ -78,6 +78,22 @@ npx -y auto-cms-server
 
 ## API
 
+### Trailing Slash Redirect
+
+When enabled with `AUTO_CMS_TRAILING_SLASH=true` (default `false`), a request
+for a directory page without a trailing slash (e.g. `/about`) is redirected
+(302) to the trailing-slash form (`/about/`).
+
+This is useful when pages use relative links (e.g. `href="styles.css"` or
+`fetch('i18n.json')`), which the browser resolves against the current URL.
+Without the redirect, such links resolve one directory up when the URL has no
+trailing slash.
+
+It is opt-in because relative links are ambiguous: a link meant to be relative
+to the parent directory (e.g. a shared `rss.xml`) would instead break once the
+page URL gains a trailing slash. Only enable it for a site after verifying
+that its relative links resolve correctly with the trailing slash.
+
 ### Multi Language
 
 The `lang` cookie is used to specify the client-preferred language. Possible values are: `en`, `zh_cn`, `zh_hk`, `ja`, `ko`, and `ar`.

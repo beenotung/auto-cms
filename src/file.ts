@@ -9,6 +9,8 @@ import { basename, join, resolve } from 'path'
  * 3. /contact -> /contact/index.html (if dir exists)
  * 4. /contact -> /contact.html (if .html file exists without extension)
  * 5. /contact -> /contact/index.html (if not exists without extension)
+ *
+ * `type` is 'dir' when served via the implicit `index.html`, else 'file'
  */
 export function resolvePathname(options: {
   site_dir: string
@@ -19,6 +21,7 @@ export function resolvePathname(options: {
   | {
       file: string
       exists: boolean
+      type: 'file' | 'dir'
     } {
   let { site_dir, pathname } = options
   pathname = decodeURIComponent(options.pathname)
@@ -43,7 +46,7 @@ export function resolvePathname(options: {
 
   // 1. /contact.html -> /contact.html
   if (file.endsWith('.html')) {
-    return { file, exists: existsSync(file) }
+    return { file, exists: existsSync(file), type: 'file' }
   }
 
   try {
@@ -51,13 +54,13 @@ export function resolvePathname(options: {
 
     // 2. /contact -> /contact (if file exists without extension)
     if (stat.isFile()) {
-      return { file, exists: true }
+      return { file, exists: true, type: 'file' }
     }
 
     // 3. /contact -> /contact/index.html (if dir exists)
     if (stat.isDirectory()) {
       file = join(file, 'index.html')
-      return { file, exists: existsSync(file) }
+      return { file, exists: existsSync(file), type: 'dir' }
     }
 
     // e.g. socket file descriptor
@@ -67,7 +70,7 @@ export function resolvePathname(options: {
     {
       let html_file = file + '.html'
       if (existsSync(html_file)) {
-        return { file: html_file, exists: true }
+        return { file: html_file, exists: true, type: 'file' }
       }
     }
 
@@ -78,7 +81,7 @@ export function resolvePathname(options: {
         mkdirSync(dir, { recursive: true })
       }
       let index_file = join(dir, 'index.html')
-      return { file: index_file, exists: false }
+      return { file: index_file, exists: false, type: 'dir' }
     }
   }
 }
